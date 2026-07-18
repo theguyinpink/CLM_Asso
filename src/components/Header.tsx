@@ -17,6 +17,10 @@ const navigationLinks = [
     path: "/avantages",
   },
   {
+    label: "Tarifs",
+    path: "/tarifs",
+  },
+  {
     label: "À propos",
     path: "/a-propos",
   },

@@ -21,6 +21,7 @@ const FeaturesPage = lazy(() => import("./pages/FeaturesPage"));
 const AudiencePage = lazy(() => import("./pages/AudiencePage"));
 const BenefitsPage = lazy(() => import("./pages/BenefitsPage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
+const PricingPage = lazy(() => import("./pages/PricingPage"));
 const InterestPage = lazy(() => import("./pages/InterestPage"));
 
 const AuthPage = lazy(() => import("./pages/auth/AuthPage"));
@@ -86,6 +87,7 @@ function AppRoutes() {
         <Route path="/pour-qui" element={<AudiencePage />} />
         <Route path="/avantages" element={<BenefitsPage />} />
         <Route path="/a-propos" element={<AboutPage />} />
+        <Route path="/tarifs" element={<PricingPage />} />
         <Route path="/manifester-mon-interet" element={<InterestPage />} />
 
         <Route path="/connexion" element={<AuthPage mode="login" />} />

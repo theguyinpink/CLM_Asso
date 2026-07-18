@@ -2,16 +2,8 @@
   min-height: 100vh;
   overflow-x: hidden;
   background:
-    radial-gradient(
-      circle at 77% 20%,
-      rgb(8 117 245 / 6%),
-      transparent 31%
-    ),
-    radial-gradient(
-      circle at 18% 77%,
-      rgb(67 185 94 / 4%),
-      transparent 26%
-    ),
+    radial-gradient(circle at 77% 20%, rgb(8 117 245 / 6%), transparent 31%),
+    radial-gradient(circle at 18% 77%, rgb(67 185 94 / 4%), transparent 26%),
     #ffffff;
 }
 
@@ -49,7 +41,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: clamp(32px, 5vw, 78px);
+  gap: clamp(24px, 3.4vw, 56px);
 }
 
 .main-navigation a {
@@ -289,12 +281,7 @@
   left: -6%;
   height: 23px;
   border-radius: 1px 1px 14px 14px;
-  background: linear-gradient(
-    180deg,
-    #e7e8eb 0%,
-    #b7b9bf 43%,
-    #85888e 100%
-  );
+  background: linear-gradient(180deg, #e7e8eb 0%, #b7b9bf 43%, #85888e 100%);
   box-shadow: 0 9px 13px rgb(7 27 56 / 20%);
 }
 
