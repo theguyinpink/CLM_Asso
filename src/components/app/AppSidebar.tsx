@@ -1,6 +1,7 @@
 import {
   CalendarDays,
   ClipboardCheck,
+  CreditCard,
   FileText,
   LayoutDashboard,
   ListChecks,
@@ -15,9 +16,9 @@ import {
 import { NavLink } from "react-router";
 
 import logo from "../../assets/logo.png";
-
 import { useClub } from "../../hooks/useClub";
 import { usePermissions } from "../../hooks/usePermissions";
+import { subscriptionAllowsAppAccess } from "../../types/billing";
 import type { ClubRole } from "../../types/club";
 
 interface AppSidebarProps {
@@ -85,6 +86,11 @@ const navigationItems = [
     icon: FileText,
   },
   {
+    label: "Abonnement",
+    path: "/app/abonnement",
+    icon: CreditCard,
+  },
+  {
     label: "Paramètres",
     path: "/app/parametres",
     icon: Settings,
@@ -92,18 +98,29 @@ const navigationItems = [
 ];
 
 function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
-  const { activeClub, activeMembership } = useClub();
+  const {
+    activeClub,
+    activeMembership,
+    activeSubscription,
+    subscriptionLoading,
+  } = useClub();
 
   const { canAccessTasks, canAccessDocuments, canAccessMessaging } =
     usePermissions();
 
   const clubName = activeClub?.name?.trim() || "Mon club";
-
   const roleLabel = activeMembership
     ? clubRoleLabels[activeMembership.role]
     : "Membre";
+  const hasAppAccess = subscriptionAllowsAppAccess(
+    activeSubscription?.status,
+  );
 
   const visibleNavigationItems = navigationItems.filter((item) => {
+    if (!subscriptionLoading && !hasAppAccess) {
+      return item.path === "/app/abonnement";
+    }
+
     if (item.path === "/app/taches") {
       return canAccessTasks;
     }
@@ -168,7 +185,11 @@ function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
 
         <div>
           <strong>{clubName}</strong>
-          <span>{roleLabel}</span>
+          <span>
+            {activeSubscription?.planName
+              ? `${activeSubscription.planName} · ${roleLabel}`
+              : roleLabel}
+          </span>
         </div>
       </div>
     </aside>

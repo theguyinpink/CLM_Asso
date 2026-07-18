@@ -1,10 +1,11 @@
 import type { FormEvent } from "react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Link,
   Navigate,
   useLocation,
   useNavigate,
+  useSearchParams,
 } from "react-router";
 import {
   ArrowRight,
@@ -19,6 +20,12 @@ import clmAssoLogo from "../../assets/logo.png";
 import AppLoadingScreen from "../../components/auth/AppLoadingScreen";
 import { useAuth } from "../../hooks/useAuth";
 import { supabase } from "../../lib/supabase";
+import {
+  isSubscriptionPlanCode,
+  readStoredSubscriptionPlanCode,
+  storeSubscriptionPlanCode,
+  SUBSCRIPTION_PLANS,
+} from "../../lib/subscriptionPlans";
 
 import "../../styles/auth.css";
 
@@ -44,6 +51,7 @@ function getAppBaseUrl() {
 function AuthPage({ mode }: AuthPageProps) {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
 
   const {
     user,
@@ -73,6 +81,26 @@ function AuthPage({ mode }: AuthPageProps) {
     useState("");
 
   const isLogin = mode === "login";
+
+  const selectedPlanCode = useMemo(() => {
+    const requestedPlan = searchParams.get("plan");
+
+    if (isSubscriptionPlanCode(requestedPlan)) {
+      return requestedPlan;
+    }
+
+    return readStoredSubscriptionPlanCode();
+  }, [searchParams]);
+
+  const selectedPlan = selectedPlanCode
+    ? SUBSCRIPTION_PLANS[selectedPlanCode]
+    : null;
+
+  useEffect(() => {
+    if (!isLogin && selectedPlanCode) {
+      storeSubscriptionPlanCode(selectedPlanCode);
+    }
+  }, [isLogin, selectedPlanCode]);
 
   if (loading) {
     return <AppLoadingScreen />;
@@ -155,6 +183,10 @@ function AuthPage({ mode }: AuthPageProps) {
       const appBaseUrl =
         getAppBaseUrl();
 
+      const createClubPath = selectedPlanCode
+        ? `/creer-mon-club?plan=${encodeURIComponent(selectedPlanCode)}`
+        : "/creer-mon-club";
+
       const {
         data,
         error,
@@ -164,7 +196,7 @@ function AuthPage({ mode }: AuthPageProps) {
 
         options: {
           emailRedirectTo:
-            `${appBaseUrl}/creer-mon-club`,
+            `${appBaseUrl}${createClubPath}`,
 
           data: {
             first_name:
@@ -175,6 +207,9 @@ function AuthPage({ mode }: AuthPageProps) {
 
             full_name:
               `${normalizedFirstName} ${normalizedLastName}`,
+
+            selected_plan:
+              selectedPlanCode,
           },
         },
       });
@@ -189,7 +224,7 @@ function AuthPage({ mode }: AuthPageProps) {
        */
       if (data.session) {
         window.location.replace(
-          `${appBaseUrl}/creer-mon-club`,
+          `${appBaseUrl}${createClubPath}`,
         );
 
         return;
@@ -288,6 +323,24 @@ function AuthPage({ mode }: AuthPageProps) {
                 : "Créez votre compte personnel avant de rejoindre ou créer un club."}
             </p>
           </header>
+
+          {!isLogin && selectedPlan && (
+            <div className="auth-selected-plan">
+              <div>
+                <span>Abonnement sélectionné</span>
+                <strong>
+                  CLM Asso {selectedPlan.name}
+                </strong>
+                <small>
+                  {selectedPlan.monthlyPrice} € / mois · {selectedPlan.audience}
+                </small>
+              </div>
+
+              <Link to="/tarifs">
+                Modifier
+              </Link>
+            </div>
+          )}
 
           {!isLogin && (
             <div className="auth-name-grid">

@@ -415,3 +415,9 @@ enabled = true
 
 [functions.clm-asso-invite-member]
 verify_jwt = true
+
+[functions.clm-asso-create-checkout]
+verify_jwt = true
+
+[functions.clm-asso-stripe-webhook]
+verify_jwt = false

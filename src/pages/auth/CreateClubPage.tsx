@@ -1,24 +1,49 @@
 import type { FormEvent } from "react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Building2,
   CheckCircle2,
+  CreditCard,
+  FileText,
   LogOut,
   Plus,
+  UsersRound,
 } from "lucide-react";
 import {
   Navigate,
   useNavigate,
+  useSearchParams,
 } from "react-router";
 
 import AppLoadingScreen from "../../components/auth/AppLoadingScreen";
 import { useAuth } from "../../hooks/useAuth";
 import { useClub } from "../../hooks/useClub";
+import {
+  clearStoredSubscriptionPlanCode,
+  isSubscriptionPlanCode,
+  readStoredSubscriptionPlanCode,
+  storeSubscriptionPlanCode,
+  SUBSCRIPTION_PLAN_LIST,
+  SUBSCRIPTION_PLANS,
+  validatePlanForLicensees,
+} from "../../lib/subscriptionPlans";
+import type { SubscriptionPlanCode } from "../../lib/subscriptionPlans";
 
 import "../../styles/auth.css";
 
+function resolveInitialPlanCode(
+  requestedPlan: string | null,
+): SubscriptionPlanCode {
+  if (isSubscriptionPlanCode(requestedPlan)) {
+    return requestedPlan;
+  }
+
+  return readStoredSubscriptionPlanCode() ?? "club";
+}
+
 function CreateClubPage() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const {
     user,
@@ -32,17 +57,42 @@ function CreateClubPage() {
     createClub,
   } = useClub();
 
-  const [clubName, setClubName] =
-    useState("");
+  const [clubName, setClubName] = useState("");
 
   const [seasonLabel, setSeasonLabel] =
     useState("2026 - 2027");
+
+  const [planCode, setPlanCode] =
+    useState<SubscriptionPlanCode>(() =>
+      resolveInitialPlanCode(
+        searchParams.get("plan"),
+      ),
+    );
+
+  const [declaredLicenseesCount, setDeclaredLicenseesCount] =
+    useState("");
 
   const [submitting, setSubmitting] =
     useState(false);
 
   const [errorMessage, setErrorMessage] =
     useState("");
+
+  const selectedPlan = useMemo(
+    () => SUBSCRIPTION_PLANS[planCode],
+    [planCode],
+  );
+
+  useEffect(() => {
+    storeSubscriptionPlanCode(planCode);
+
+    if (searchParams.get("plan") !== planCode) {
+      setSearchParams(
+        { plan: planCode },
+        { replace: true },
+      );
+    }
+  }, [planCode, searchParams, setSearchParams]);
 
   if (authLoading || clubLoading) {
     return <AppLoadingScreen />;
@@ -51,7 +101,7 @@ function CreateClubPage() {
   if (!user) {
     return (
       <Navigate
-        to="/connexion"
+        to={`/connexion?plan=${planCode}`}
         replace
       />
     );
@@ -75,12 +125,40 @@ function CreateClubPage() {
     setErrorMessage("");
 
     try {
+      const licenseesCount = Number.parseInt(
+        declaredLicenseesCount,
+        10,
+      );
+
+      if (
+        !Number.isInteger(licenseesCount) ||
+        licenseesCount < 1 ||
+        licenseesCount > 100_000
+      ) {
+        throw new Error(
+          "Indiquez un nombre de licenciés compris entre 1 et 100 000.",
+        );
+      }
+
+      const validation = validatePlanForLicensees(
+        planCode,
+        licenseesCount,
+      );
+
+      if (!validation.valid) {
+        throw new Error(validation.message);
+      }
+
       await createClub({
         name: clubName,
         seasonLabel,
+        planCode,
+        declaredLicenseesCount: licenseesCount,
       });
 
-      navigate("/app", {
+      clearStoredSubscriptionPlanCode();
+
+      navigate("/app/abonnement", {
         replace: true,
       });
     } catch (caughtError) {
@@ -109,9 +187,7 @@ function CreateClubPage() {
         <h1>Créer l’espace de votre club</h1>
 
         <p>
-          Cet espace contiendra les membres,
-          équipes, matchs, convocations,
-          annonces, tâches et documents.
+          Renseignez le club et confirmez l’abonnement choisi avant la future étape de paiement Stripe.
         </p>
 
         <label>
@@ -125,34 +201,107 @@ function CreateClubPage() {
             }
             placeholder="Basket Club Combs"
             minLength={2}
+            maxLength={160}
             required
           />
         </label>
 
+        <div className="create-club-form-grid">
+          <label>
+            Saison actuelle
+
+            <select
+              value={seasonLabel}
+              onChange={(event) =>
+                setSeasonLabel(
+                  event.target.value,
+                )
+              }
+            >
+              <option>2025 - 2026</option>
+              <option>2026 - 2027</option>
+              <option>2027 - 2028</option>
+            </select>
+          </label>
+
+          <label>
+            Nombre de licenciés
+
+            <input
+              type="number"
+              min={1}
+              max={100000}
+              step={1}
+              inputMode="numeric"
+              value={declaredLicenseesCount}
+              onChange={(event) =>
+                setDeclaredLicenseesCount(
+                  event.target.value,
+                )
+              }
+              placeholder="Ex. 145"
+              required
+            />
+          </label>
+        </div>
+
         <label>
-          Saison actuelle
+          Abonnement choisi
 
           <select
-            value={seasonLabel}
+            value={planCode}
             onChange={(event) =>
-              setSeasonLabel(
-                event.target.value,
+              setPlanCode(
+                event.target.value as SubscriptionPlanCode,
               )
             }
           >
-            <option>2025 - 2026</option>
-            <option>2026 - 2027</option>
-            <option>2027 - 2028</option>
+            {SUBSCRIPTION_PLAN_LIST.map((plan) => (
+              <option
+                value={plan.code}
+                key={plan.code}
+              >
+                {plan.name} — {plan.monthlyPrice} € / mois
+              </option>
+            ))}
           </select>
         </label>
+
+        <section className="create-club-plan-summary">
+          <div className="create-club-plan-summary__heading">
+            <span>
+              <CreditCard size={18} />
+            </span>
+
+            <div>
+              <small>CLM Asso</small>
+              <strong>{selectedPlan.name}</strong>
+            </div>
+
+            <b>
+              {selectedPlan.monthlyPrice} €
+              <small>/ mois</small>
+            </b>
+          </div>
+
+          <div className="create-club-plan-summary__details">
+            <span>
+              <UsersRound size={15} />
+              {selectedPlan.audience}
+            </span>
+
+            <span>
+              <FileText size={15} />
+              {selectedPlan.storageLabel}
+            </span>
+          </div>
+        </section>
 
         <div className="create-club-information">
           <CheckCircle2 size={18} />
 
           <span>
-            Tu deviendras automatiquement
-            propriétaire et administrateur du
-            club.
+            Tu deviendras automatiquement propriétaire du club. L’abonnement sera créé avec le statut « paiement en attente » jusqu’à la connexion de Stripe Checkout.
           </span>
         </div>
 

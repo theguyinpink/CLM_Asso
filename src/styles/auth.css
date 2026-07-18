@@ -591,3 +591,163 @@
   font-weight: 700;
   text-align: left;
 }
+
+/* =========================================================
+   CONSERVATION DU CHOIX D’ABONNEMENT
+   ========================================================= */
+
+.auth-selected-plan {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+
+  padding: 12px 13px;
+
+  border: 1px solid #cfe0f5;
+  border-radius: 11px;
+
+  background: #f4f9ff;
+}
+
+.auth-selected-plan > div {
+  min-width: 0;
+
+  display: grid;
+  gap: 3px;
+}
+
+.auth-selected-plan span {
+  color: #0875f5;
+
+  font-size: 8px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.auth-selected-plan strong {
+  color: #10213a;
+
+  font-size: 11px;
+}
+
+.auth-selected-plan small {
+  color: #6f8094;
+
+  font-size: 8px;
+}
+
+.auth-selected-plan > a {
+  flex: 0 0 auto;
+
+  color: #0875f5;
+
+  font-size: 8px;
+  font-weight: 800;
+}
+
+.create-club-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 13px;
+}
+
+.create-club-plan-summary {
+  display: grid;
+  gap: 12px;
+
+  padding: 14px;
+
+  border: 1px solid #cfe0f5;
+  border-radius: 12px;
+
+  background: #f6faff;
+
+  text-align: left;
+}
+
+.create-club-plan-summary__heading {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.create-club-plan-summary__heading > span {
+  width: 38px;
+  height: 38px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 10px;
+
+  background: #e6f1ff;
+  color: #0875f5;
+}
+
+.create-club-plan-summary__heading > div {
+  display: grid;
+  gap: 2px;
+}
+
+.create-club-plan-summary__heading > div small {
+  color: #0875f5;
+
+  font-size: 7px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.create-club-plan-summary__heading > div strong {
+  color: #10213a;
+
+  font-size: 12px;
+}
+
+.create-club-plan-summary__heading > b {
+  color: #10213a;
+
+  font-size: 17px;
+  white-space: nowrap;
+}
+
+.create-club-plan-summary__heading > b small {
+  margin-left: 3px;
+
+  color: #748397;
+
+  font-size: 7px;
+  font-weight: 700;
+}
+
+.create-club-plan-summary__details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+}
+
+.create-club-plan-summary__details span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  color: #53677f;
+
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.create-club-plan-summary__details svg {
+  color: #0875f5;
+}
+
+@media (max-width: 520px) {
+  .create-club-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-selected-plan {
+    align-items: flex-start;
+  }
+}
