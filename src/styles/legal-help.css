@@ -1,0 +1,147 @@
+.legal-help-page {
+  display: grid;
+  gap: 18px;
+}
+
+.legal-help-page__heading {
+  display: grid;
+  gap: 6px;
+}
+
+.legal-help-page__heading > span {
+  color: #0875f5;
+  font-size: 9px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.legal-help-page__heading h1 {
+  margin: 0;
+  color: #10213a;
+  font-size: clamp(23px, 3vw, 31px);
+}
+
+.legal-help-page__heading p {
+  max-width: 720px;
+  margin: 0;
+  color: #66768a;
+  font-size: 10px;
+  line-height: 1.65;
+}
+
+.legal-help-page__contact {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 18px;
+  border: 1px solid #cfe2fb;
+  border-radius: 14px;
+  background: #f2f8ff;
+}
+
+.legal-help-page__contact > div {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #0875f5;
+}
+
+.legal-help-page__contact span {
+  display: grid;
+  gap: 3px;
+}
+
+.legal-help-page__contact strong {
+  color: #15324f;
+  font-size: 11px;
+}
+
+.legal-help-page__contact small {
+  color: #64778d;
+  font-size: 8px;
+}
+
+.legal-help-page__contact > a {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 14px;
+  border-radius: 9px;
+  background: #0875f5;
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.legal-help-page__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.legal-help-card {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-height: 92px;
+  padding: 15px;
+  border: 1px solid #e0e7ef;
+  border-radius: 13px;
+  background: #ffffff;
+  text-decoration: none;
+  box-shadow: 0 7px 20px rgb(7 27 56 / 4%);
+  transition: border-color 150ms ease, transform 150ms ease;
+}
+
+.legal-help-card:hover,
+.legal-help-card:focus-visible {
+  border-color: #a9cef9;
+  transform: translateY(-1px);
+}
+
+.legal-help-card__icon {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: #eaf4ff;
+  color: #0875f5;
+}
+
+.legal-help-card > span:last-child {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+
+.legal-help-card strong {
+  color: #18314e;
+  font-size: 10px;
+}
+
+.legal-help-card small {
+  color: #738196;
+  font-size: 8px;
+  line-height: 1.5;
+}
+
+@media (max-width: 720px) {
+  .legal-help-page__contact {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .legal-help-page__contact > a {
+    width: 100%;
+  }
+
+  .legal-help-page__grid {
+    grid-template-columns: 1fr;
+  }
+}

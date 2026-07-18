@@ -1,4 +1,5 @@
 import {
+  CircleHelp,
   CalendarDays,
   ClipboardCheck,
   CreditCard,
@@ -178,6 +179,20 @@ function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
           );
         })}
       </nav>
+
+      
+      <NavLink
+        to="/app/aide"
+        onClick={onClose}
+        className={({ isActive }) =>
+          isActive
+            ? "app-sidebar__support app-sidebar__support--active"
+            : "app-sidebar__support"
+        }
+      >
+        <CircleHelp size={17} strokeWidth={1.9} />
+        <span>Aide et informations légales</span>
+      </NavLink>
 
       <div className="app-sidebar__plan">
         <div className="app-sidebar__plan-icon">

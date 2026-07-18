@@ -30,3 +30,4 @@ dist-ssr
 
 # État local Supabase — contient notamment la référence du projet
 supabase/.temp/
+.clm-patch-backups/

@@ -3,6 +3,7 @@ import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router";
 
 import BackToTopButton from "./components/BackToTopButton";
+import CompactLegalFooter from "./components/CompactLegalFooter";
 import ScrollToTop from "./components/ScrollToTop";
 import AppLayout from "./components/app/AppLayout";
 import ToastViewport from "./components/app/shared/ToastViewport";
@@ -41,9 +42,7 @@ const CompleteProfilePage = lazy(
 const ForgotPasswordPage = lazy(
   () => import("./pages/auth/ForgotPasswordPage"),
 );
-const ResetPasswordPage = lazy(
-  () => import("./pages/auth/ResetPasswordPage"),
-);
+const ResetPasswordPage = lazy(() => import("./pages/auth/ResetPasswordPage"));
 const AcceptInvitationPage = lazy(
   () => import("./pages/auth/AcceptInvitationPage"),
 );
@@ -51,31 +50,22 @@ const AcceptLegalDocumentsPage = lazy(
   () => import("./pages/auth/AcceptLegalDocumentsPage"),
 );
 
-const AppPlaceholderPage = lazy(
-  () => import("./pages/app/AppPlaceholderPage"),
-);
+const AppPlaceholderPage = lazy(() => import("./pages/app/AppPlaceholderPage"));
 const DashboardPage = lazy(() => import("./pages/app/DashboardPage"));
-const SubscriptionPage = lazy(
-  () => import("./pages/app/SubscriptionPage"),
-);
+const SubscriptionPage = lazy(() => import("./pages/app/SubscriptionPage"));
 const MessagingPage = lazy(() => import("./pages/app/MessagingPage"));
 const TeamsPage = lazy(() => import("./pages/app/TeamsPage"));
 const TeamDetailsPage = lazy(() => import("./pages/app/TeamDetailsPage"));
 const CalendarPage = lazy(() => import("./pages/app/CalendarPage"));
 const MatchesPage = lazy(() => import("./pages/app/MatchesPage"));
-const MatchDetailsPage = lazy(
-  () => import("./pages/app/MatchDetailsPage"),
-);
-const ConvocationsPage = lazy(
-  () => import("./pages/app/ConvocationsPage"),
-);
-const AnnouncementsPage = lazy(
-  () => import("./pages/app/AnnouncementsPage"),
-);
+const MatchDetailsPage = lazy(() => import("./pages/app/MatchDetailsPage"));
+const ConvocationsPage = lazy(() => import("./pages/app/ConvocationsPage"));
+const AnnouncementsPage = lazy(() => import("./pages/app/AnnouncementsPage"));
 const TasksPage = lazy(() => import("./pages/app/TasksPage"));
 const MembersPage = lazy(() => import("./pages/app/MembersPage"));
 const DocumentsPage = lazy(() => import("./pages/app/DocumentsPage"));
 const SettingsPage = lazy(() => import("./pages/app/SettingsPage"));
+const LegalHelpPage = lazy(() => import("./pages/app/LegalHelpPage"));
 
 interface RequireSectionAccessProps {
   section: "tasks" | "documents" | "messaging";
@@ -232,6 +222,7 @@ function AppRoutes() {
               }
             />
             <Route path="parametres" element={<SettingsPage />} />
+            <Route path="aide" element={<LegalHelpPage />} />
           </Route>
 
           <Route path="*" element={<AppPlaceholderPage />} />
@@ -251,6 +242,7 @@ function App() {
           <ClubProvider>
             <ScrollToTop />
             <AppRoutes />
+            <CompactLegalFooter />
             <BackToTopButton />
           </ClubProvider>
         </ProfileProvider>

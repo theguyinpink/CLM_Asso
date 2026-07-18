@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Outlet } from "react-router";
 
 import AppHeader from "./AppHeader";
+import PaymentPastDueBanner from "./PaymentPastDueBanner";
 import AppSidebar from "./AppSidebar";
 
 import "../../styles/app.css";
@@ -34,6 +35,8 @@ function AppLayout() {
             setIsSidebarOpen(true)
           }
         />
+
+          <PaymentPastDueBanner />
 
         <main className="app-shell__content">
           <Outlet />
