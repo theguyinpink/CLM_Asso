@@ -8,6 +8,7 @@ function LegalNoticePage() {
   return (
     <LegalPageLayout
       document={document}
+      introduction="Les présentes mentions identifient l’éditeur, le responsable de publication et l’hébergeur du service CLM Asso."
     >
       <section>
         <h2>1. Éditeur du service</h2>
