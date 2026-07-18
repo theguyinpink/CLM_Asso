@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import Header from "./Header";
+import SiteFooter from "./SiteFooter";
 import "../styles/home.css";
 import "../styles/marketing-pages.css";
 
@@ -13,6 +14,7 @@ function MarketingPageLayout({ children }: MarketingPageLayoutProps) {
       <Header />
 
       <main className="marketing-main">{children}</main>
+      <SiteFooter />
     </div>
   );
 }

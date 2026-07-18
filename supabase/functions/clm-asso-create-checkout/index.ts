@@ -38,6 +38,19 @@ interface PlanRow {
   is_active: boolean;
 }
 
+interface LegalDocumentRow {
+  id: string;
+  document_key: "privacy" | "terms_of_use" | "terms_of_sale";
+  version: string;
+}
+
+interface LegalAcceptanceRow {
+  id: string;
+  document_id: string;
+  document_key: "privacy" | "terms_of_use" | "terms_of_sale";
+  document_version: string;
+}
+
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -180,6 +193,95 @@ Deno.serve(async (request) => {
       );
     }
 
+    const { data: legalDocumentsData, error: legalDocumentsError } =
+      await adminClient
+        .from("clm_asso_legal_documents")
+        .select("id, document_key, version")
+        .in("document_key", ["privacy", "terms_of_use", "terms_of_sale"])
+        .eq("is_current", true);
+
+    if (legalDocumentsError) {
+      throw legalDocumentsError;
+    }
+
+    const legalDocuments =
+      (legalDocumentsData ?? []) as LegalDocumentRow[];
+
+    const privacyDocument = legalDocuments.find(
+      (document) => document.document_key === "privacy",
+    );
+    const termsOfUseDocument = legalDocuments.find(
+      (document) => document.document_key === "terms_of_use",
+    );
+    const termsOfSaleDocument = legalDocuments.find(
+      (document) => document.document_key === "terms_of_sale",
+    );
+
+    if (!privacyDocument || !termsOfUseDocument || !termsOfSaleDocument) {
+      return jsonResponse(
+        { error: "La configuration juridique de CLM Asso est incomplète." },
+        503,
+        cors.headers,
+      );
+    }
+
+    const { data: accountAcceptancesData, error: accountAcceptancesError } =
+      await adminClient
+        .from("clm_asso_legal_acceptances")
+        .select("id, document_id, document_key, document_version")
+        .eq("user_id", user.id)
+        .is("club_id", null)
+        .in("document_id", [privacyDocument.id, termsOfUseDocument.id]);
+
+    if (accountAcceptancesError) {
+      throw accountAcceptancesError;
+    }
+
+    const accountAcceptances =
+      (accountAcceptancesData ?? []) as LegalAcceptanceRow[];
+
+    const hasCurrentPrivacyAcknowledgement = accountAcceptances.some(
+      (acceptance) => acceptance.document_id === privacyDocument.id,
+    );
+    const hasCurrentTermsOfUseAcceptance = accountAcceptances.some(
+      (acceptance) => acceptance.document_id === termsOfUseDocument.id,
+    );
+
+    if (!hasCurrentPrivacyAcknowledgement || !hasCurrentTermsOfUseAcceptance) {
+      return jsonResponse(
+        {
+          error:
+            "Vous devez accepter les CGU et consulter la politique de confidentialité avant le paiement.",
+        },
+        409,
+        cors.headers,
+      );
+    }
+
+    const { data: billingAcceptanceData, error: billingAcceptanceError } =
+      await adminClient
+        .from("clm_asso_legal_acceptances")
+        .select("id, document_id, document_key, document_version")
+        .eq("user_id", user.id)
+        .eq("club_id", clubId)
+        .eq("document_id", termsOfSaleDocument.id)
+        .maybeSingle();
+
+    if (billingAcceptanceError) {
+      throw billingAcceptanceError;
+    }
+
+    const billingAcceptance =
+      billingAcceptanceData as LegalAcceptanceRow | null;
+
+    if (!billingAcceptance) {
+      return jsonResponse(
+        { error: "Vous devez accepter les CGV avant le paiement." },
+        409,
+        cors.headers,
+      );
+    }
+
     const { data: subscriptionData, error: subscriptionError } =
       await adminClient
         .from("clm_asso_club_subscriptions")
@@ -293,6 +395,10 @@ Deno.serve(async (request) => {
       clm_asso_subscription_id: subscription.id,
       clm_asso_plan_code: plan.code,
       selected_by_user_id: user.id,
+      terms_of_use_version: termsOfUseDocument.version,
+      privacy_version: privacyDocument.version,
+      terms_of_sale_version: termsOfSaleDocument.version,
+      terms_of_sale_acceptance_id: billingAcceptance.id,
     };
 
     const createParams: Parameters<
@@ -343,6 +449,10 @@ Deno.serve(async (request) => {
           checkout_plan_code: plan.code,
           checkout_created_by: user.id,
           checkout_created_at: new Date(now).toISOString(),
+          terms_of_use_version: termsOfUseDocument.version,
+          privacy_version: privacyDocument.version,
+          terms_of_sale_version: termsOfSaleDocument.version,
+          terms_of_sale_acceptance_id: billingAcceptance.id,
         },
       })
       .eq("id", subscription.id);

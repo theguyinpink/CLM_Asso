@@ -2,6 +2,7 @@ import Header from "../components/Header";
 import Hero from "../components/Hero";
 import Benefits from "../components/Benefits";
 import PilotBanner from "../components/PilotBanner";
+import SiteFooter from "../components/SiteFooter";
 import "../styles/home.css";
 
 function HomePage() {
@@ -14,6 +15,8 @@ function HomePage() {
         <Benefits />
         <PilotBanner />
       </main>
+
+      <SiteFooter />
     </div>
   );
 }

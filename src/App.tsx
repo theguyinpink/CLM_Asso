@@ -11,6 +11,7 @@ import RequireActiveSubscription from "./components/auth/RequireActiveSubscripti
 import RequireAuth from "./components/auth/RequireAuth";
 import RequireClub from "./components/auth/RequireClub";
 import RequireCompleteProfile from "./components/auth/RequireCompleteProfile";
+import RequireLegalAcceptance from "./components/auth/RequireLegalAcceptance";
 import { useClub } from "./hooks/useClub";
 import { usePermissions } from "./hooks/usePermissions";
 import AuthProvider from "./providers/AuthProvider";
@@ -26,6 +27,11 @@ const BenefitsPage = lazy(() => import("./pages/BenefitsPage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
 const PricingPage = lazy(() => import("./pages/PricingPage"));
 const InterestPage = lazy(() => import("./pages/InterestPage"));
+const LegalNoticePage = lazy(() => import("./pages/LegalNoticePage"));
+const PrivacyPolicyPage = lazy(() => import("./pages/PrivacyPolicyPage"));
+const TermsOfUsePage = lazy(() => import("./pages/TermsOfUsePage"));
+const TermsOfSalePage = lazy(() => import("./pages/TermsOfSalePage"));
+const CookiesPolicyPage = lazy(() => import("./pages/CookiesPolicyPage"));
 
 const AuthPage = lazy(() => import("./pages/auth/AuthPage"));
 const CreateClubPage = lazy(() => import("./pages/auth/CreateClubPage"));
@@ -40,6 +46,9 @@ const ResetPasswordPage = lazy(
 );
 const AcceptInvitationPage = lazy(
   () => import("./pages/auth/AcceptInvitationPage"),
+);
+const AcceptLegalDocumentsPage = lazy(
+  () => import("./pages/auth/AcceptLegalDocumentsPage"),
 );
 
 const AppPlaceholderPage = lazy(
@@ -124,18 +133,33 @@ function AppRoutes() {
         <Route path="/a-propos" element={<AboutPage />} />
         <Route path="/tarifs" element={<PricingPage />} />
         <Route path="/manifester-mon-interet" element={<InterestPage />} />
+        <Route path="/mentions-legales" element={<LegalNoticePage />} />
+        <Route path="/confidentialite" element={<PrivacyPolicyPage />} />
+        <Route path="/cgu" element={<TermsOfUsePage />} />
+        <Route path="/cgv" element={<TermsOfSalePage />} />
+        <Route path="/cookies" element={<CookiesPolicyPage />} />
 
         <Route path="/connexion" element={<AuthPage mode="login" />} />
         <Route path="/inscription" element={<AuthPage mode="register" />} />
         <Route path="/mot-de-passe-oublie" element={<ForgotPasswordPage />} />
         <Route path="/nouveau-mot-de-passe" element={<ResetPasswordPage />} />
         <Route path="/invitation" element={<AcceptInvitationPage />} />
+        <Route
+          path="/accepter-conditions"
+          element={
+            <RequireAuth>
+              <AcceptLegalDocumentsPage />
+            </RequireAuth>
+          }
+        />
 
         <Route
           path="/completer-profil"
           element={
             <RequireAuth>
-              <CompleteProfilePage />
+              <RequireLegalAcceptance>
+                <CompleteProfilePage />
+              </RequireLegalAcceptance>
             </RequireAuth>
           }
         />
@@ -144,9 +168,11 @@ function AppRoutes() {
           path="/creer-mon-club"
           element={
             <RequireAuth>
-              <RequireCompleteProfile>
-                <CreateClubPage />
-              </RequireCompleteProfile>
+              <RequireLegalAcceptance>
+                <RequireCompleteProfile>
+                  <CreateClubPage />
+                </RequireCompleteProfile>
+              </RequireLegalAcceptance>
             </RequireAuth>
           }
         />
@@ -155,11 +181,13 @@ function AppRoutes() {
           path="/app"
           element={
             <RequireAuth>
-              <RequireCompleteProfile>
-                <RequireClub>
-                  <AppLayout />
-                </RequireClub>
-              </RequireCompleteProfile>
+              <RequireLegalAcceptance>
+                <RequireCompleteProfile>
+                  <RequireClub>
+                    <AppLayout />
+                  </RequireClub>
+                </RequireCompleteProfile>
+              </RequireLegalAcceptance>
             </RequireAuth>
           }
         >

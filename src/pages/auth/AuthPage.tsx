@@ -19,6 +19,7 @@ import {
 import clmAssoLogo from "../../assets/logo.png";
 import AppLoadingScreen from "../../components/auth/AppLoadingScreen";
 import { useAuth } from "../../hooks/useAuth";
+import { LEGAL_CONFIG } from "../../legal/legalConfig";
 import { supabase } from "../../lib/supabase";
 import {
   isSubscriptionPlanCode,
@@ -28,6 +29,7 @@ import {
 } from "../../lib/subscriptionPlans";
 
 import "../../styles/auth.css";
+import "../../styles/legal.css";
 
 type AuthMode = "login" | "register";
 
@@ -79,6 +81,9 @@ function AuthPage({ mode }: AuthPageProps) {
 
   const [successMessage, setSuccessMessage] =
     useState("");
+
+  const [legalAccepted, setLegalAccepted] =
+    useState(false);
 
   const isLogin = mode === "login";
 
@@ -180,6 +185,12 @@ function AuthPage({ mode }: AuthPageProps) {
         );
       }
 
+      if (!legalAccepted) {
+        throw new Error(
+          "Vous devez accepter les CGU et reconnaître avoir lu la politique de confidentialité.",
+        );
+      }
+
       const appBaseUrl =
         getAppBaseUrl();
 
@@ -210,6 +221,14 @@ function AuthPage({ mode }: AuthPageProps) {
 
             selected_plan:
               selectedPlanCode,
+
+            legal_signup_accepted: true,
+
+            accepted_terms_of_use_version:
+              LEGAL_CONFIG.documents.termsOfUse.version,
+
+            acknowledged_privacy_version:
+              LEGAL_CONFIG.documents.privacy.version,
           },
         },
       });
@@ -428,6 +447,38 @@ function AuthPage({ mode }: AuthPageProps) {
               />
             </div>
           </label>
+
+          {!isLogin && (
+            <label className="auth-legal-checkbox">
+              <input
+                type="checkbox"
+                checked={legalAccepted}
+                onChange={(event) =>
+                  setLegalAccepted(event.target.checked)
+                }
+                required
+              />
+
+              <span>
+                J’accepte les{" "}
+                <Link
+                  to={LEGAL_CONFIG.documents.termsOfUse.route}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Conditions générales d’utilisation
+                </Link>{" "}
+                et je reconnais avoir pris connaissance de la{" "}
+                <Link
+                  to={LEGAL_CONFIG.documents.privacy.route}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Politique de confidentialité
+                </Link>.
+              </span>
+            </label>
+          )}
 
           {isLogin && (
             <Link

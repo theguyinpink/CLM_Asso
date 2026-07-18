@@ -15,13 +15,16 @@ import {
 import { Link, useSearchParams } from "react-router";
 
 import { useClub } from "../../hooks/useClub";
+import { LEGAL_CONFIG } from "../../legal/legalConfig";
 import { createSubscriptionCheckout } from "../../services/billingService";
+import { acceptBillingTerms } from "../../services/legalService";
 import {
   subscriptionAllowsAppAccess,
   type SubscriptionStatus,
 } from "../../types/billing";
 
 import "../../styles/subscription.css";
+import "../../styles/legal.css";
 
 const statusLabels: Record<SubscriptionStatus, string> = {
   pending_payment: "Paiement en attente",
@@ -78,6 +81,7 @@ function SubscriptionPage() {
   const [startingCheckout, setStartingCheckout] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [actionError, setActionError] = useState("");
+  const [billingTermsAccepted, setBillingTermsAccepted] = useState(false);
 
   const checkoutResult = searchParams.get("checkout");
   const hasAccess = subscriptionAllowsAppAccess(activeSubscription?.status);
@@ -123,10 +127,18 @@ function SubscriptionPage() {
       return;
     }
 
+    if (!billingTermsAccepted) {
+      setActionError(
+        "Vous devez accepter les CGV avant de procéder au paiement.",
+      );
+      return;
+    }
+
     setStartingCheckout(true);
     setActionError("");
 
     try {
+      await acceptBillingTerms(activeClub.id);
       const checkout = await createSubscriptionCheckout(activeClub.id);
       window.location.assign(checkout.url);
     } catch (caughtError) {
@@ -336,6 +348,41 @@ function SubscriptionPage() {
                 Le paiement est réalisé sur la page sécurisée de Stripe. Aucun
                 numéro de carte n’est enregistré par CLM Asso.
               </p>
+
+              <div className="subscription-legal-block">
+                <label className="subscription-legal-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={billingTermsAccepted}
+                    onChange={(event) =>
+                      setBillingTermsAccepted(event.target.checked)
+                    }
+                  />
+                  <span>
+                    J’accepte les{" "}
+                    <Link
+                      to={LEGAL_CONFIG.documents.termsOfSale.route}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Conditions générales de vente
+                    </Link>{" "}
+                    et confirme avoir consulté les{" "}
+                    <Link
+                      to={LEGAL_CONFIG.documents.termsOfUse.route}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Conditions générales d’utilisation
+                    </Link>.
+                  </span>
+                </label>
+
+                <small>
+                  L’acceptation de la version {LEGAL_CONFIG.documents.termsOfSale.version}
+                  {" "}des CGV sera horodatée et liée à ce club.
+                </small>
+              </div>
 
               <button
                 type="button"
