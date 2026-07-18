@@ -114,6 +114,7 @@ function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
     : "Membre";
   const hasAppAccess = subscriptionAllowsAppAccess(
     activeSubscription?.status,
+    activeSubscription?.paymentGracePeriodEndsAt,
   );
 
   const visibleNavigationItems = navigationItems.filter((item) => {

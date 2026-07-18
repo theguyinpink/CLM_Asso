@@ -19,21 +19,9 @@
   padding: 45px clamp(35px, 6vw, 90px);
 
   background:
-    radial-gradient(
-      circle at 15% 15%,
-      rgb(8 117 245 / 26%),
-      transparent 34%
-    ),
-    radial-gradient(
-      circle at 80% 85%,
-      rgb(36 175 91 / 20%),
-      transparent 34%
-    ),
-    linear-gradient(
-      145deg,
-      #081b36,
-      #102b55
-    );
+    radial-gradient(circle at 15% 15%, rgb(8 117 245 / 26%), transparent 34%),
+    radial-gradient(circle at 80% 85%, rgb(36 175 91 / 20%), transparent 34%),
+    linear-gradient(145deg, #081b36, #102b55);
 
   color: #ffffff;
 }
@@ -55,7 +43,6 @@
   object-fit: contain;
   object-position: left center;
 }
-
 
 .auth-presentation > div:nth-child(2) {
   max-width: 620px;
@@ -86,12 +73,7 @@
 }
 
 .auth-presentation h1 span {
-  background: linear-gradient(
-    90deg,
-    #ff9f2d,
-    #44cf72,
-    #43a9ff
-  );
+  background: linear-gradient(90deg, #ff9f2d, #44cf72, #43a9ff);
 
   background-clip: text;
   color: transparent;
@@ -147,8 +129,7 @@
 
   background: #ffffff;
 
-  box-shadow: 0 22px 65px
-    rgb(7 27 56 / 10%);
+  box-shadow: 0 22px 65px rgb(7 27 56 / 10%);
 }
 
 .auth-form-card header {
@@ -215,8 +196,7 @@
 .auth-input:focus-within {
   border-color: var(--color-blue, #0875f5);
 
-  box-shadow: 0 0 0 4px
-    rgb(8 117 245 / 9%);
+  box-shadow: 0 0 0 4px rgb(8 117 245 / 9%);
 }
 
 .auth-input input {
@@ -231,6 +211,40 @@
   font-size: 11px;
 }
 
+.auth-input input {
+  min-width: 0;
+  flex: 1;
+}
+
+.auth-password-toggle {
+  width: 32px;
+  height: 32px;
+
+  flex: 0 0 auto;
+
+  display: grid;
+  place-items: center;
+
+  padding: 0;
+
+  border: 0;
+  border-radius: 7px;
+
+  background: transparent;
+  color: #718096;
+  cursor: pointer;
+}
+
+.auth-password-toggle:hover {
+  background: #f1f5f9;
+  color: #0875f5;
+}
+
+.auth-password-toggle:focus-visible {
+  outline: 2px solid #0875f5;
+  outline-offset: 2px;
+}
+
 .auth-submit-button {
   min-height: 45px;
 
@@ -241,11 +255,7 @@
 
   border-radius: 9px;
 
-  background: linear-gradient(
-    90deg,
-    #0875f5,
-    #0866da
-  );
+  background: linear-gradient(90deg, #0875f5, #0866da);
 
   color: #ffffff;
   cursor: pointer;
@@ -357,11 +367,7 @@
   padding: 30px;
 
   background:
-    radial-gradient(
-      circle at 15% 15%,
-      rgb(8 117 245 / 12%),
-      transparent 34%
-    ),
+    radial-gradient(circle at 15% 15%, rgb(8 117 245 / 12%), transparent 34%),
     #f6f8fb;
 }
 
@@ -378,8 +384,7 @@
 
   background: #ffffff;
 
-  box-shadow: 0 22px 65px
-    rgb(7 27 56 / 10%);
+  box-shadow: 0 22px 65px rgb(7 27 56 / 10%);
 
   text-align: center;
 }
@@ -448,8 +453,7 @@
 .create-club-card select:focus {
   border-color: #0875f5;
 
-  box-shadow: 0 0 0 4px
-    rgb(8 117 245 / 9%);
+  box-shadow: 0 0 0 4px rgb(8 117 245 / 9%);
 }
 
 .create-club-information {

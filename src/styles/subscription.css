@@ -372,3 +372,215 @@
     flex-wrap: wrap;
   }
 }
+
+/* =========================================================
+   PORTAIL STRIPE ET CHANGEMENT D’OFFRE
+   ========================================================= */
+
+.subscription-action-card button svg,
+.subscription-switch-card button svg {
+  flex: 0 0 auto;
+}
+
+.subscription-action-card button:disabled,
+.subscription-switch-card button:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+.subscription-danger-action,
+.subscription-dashboard-link {
+  width: 100%;
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.subscription-danger-action {
+  margin-top: 2px;
+  border: 1px solid #f0cdcd;
+  background: #fff7f7;
+  color: #b83c3c;
+  cursor: pointer;
+}
+
+.subscription-dashboard-link {
+  margin-top: 2px;
+  border: 1px solid #d9e7f7;
+  background: #f4f9ff;
+  color: var(--color-blue);
+}
+
+.subscription-legal-check {
+  margin-top: 6px;
+}
+
+.subscription-plan-switcher {
+  padding: 25px;
+  border: 1px solid #e0e7ef;
+  border-radius: 18px;
+  background: #ffffff;
+}
+
+.subscription-plan-switcher__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.subscription-plan-switcher__header > div > span {
+  color: var(--color-blue);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.subscription-plan-switcher__header h2 {
+  margin: 5px 0 6px;
+  color: var(--color-navy);
+  font-size: 22px;
+}
+
+.subscription-plan-switcher__header p {
+  max-width: 680px;
+  margin: 0;
+  color: #6f7f92;
+  line-height: 1.6;
+}
+
+.subscription-plan-switcher__header > svg {
+  flex: 0 0 auto;
+  color: var(--color-blue);
+}
+
+.subscription-plan-switcher__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.subscription-switch-card {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  padding: 19px;
+  border: 1px solid #e1e7ef;
+  border-radius: 15px;
+  background: #fbfcfe;
+}
+
+.subscription-switch-card--current {
+  border-color: #b9d7fb;
+  background: #f4f9ff;
+}
+
+.subscription-switch-card span {
+  color: var(--color-blue);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.subscription-switch-card h3 {
+  margin: 4px 0 4px;
+  color: var(--color-navy);
+  font-size: 18px;
+}
+
+.subscription-switch-card p {
+  margin: 0;
+  color: #6f7f92;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.subscription-switch-card > strong {
+  color: var(--color-navy);
+  font-size: 23px;
+}
+
+.subscription-switch-card > strong small {
+  margin-left: 3px;
+  color: #7b8797;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.subscription-switch-card ul {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.subscription-switch-card li {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  color: #52657b;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.subscription-switch-card li svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: #2f974a;
+}
+
+.subscription-switch-card button {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: auto;
+  padding: 9px 12px;
+  border: 1px solid #d6e0eb;
+  border-radius: 10px;
+  background: #ffffff;
+  color: var(--color-navy);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.subscription-switch-card--current button {
+  border-color: #cfe3fb;
+  background: #eaf4ff;
+  color: var(--color-blue);
+}
+
+.subscription-plan-switcher__note {
+  margin: 16px 0 0;
+  color: #7a8797;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+@media (max-width: 900px) {
+  .subscription-plan-switcher__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .subscription-plan-switcher {
+    padding: 19px;
+  }
+
+  .subscription-plan-switcher__header > svg {
+    display: none;
+  }
+}

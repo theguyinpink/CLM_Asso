@@ -31,8 +31,10 @@ const SUPPORTED_EVENTS = new Set([
   "customer.subscription.created",
   "customer.subscription.updated",
   "customer.subscription.deleted",
+  "customer.subscription.paused",
   "invoice.paid",
   "invoice.payment_failed",
+  "invoice.payment_action_required",
 ]);
 
 function stripeId(value: unknown): string | null {
@@ -182,7 +184,8 @@ async function buildApplyPayload(
   if (
     event.type === "customer.subscription.created" ||
     event.type === "customer.subscription.updated" ||
-    event.type === "customer.subscription.deleted"
+    event.type === "customer.subscription.deleted" ||
+    event.type === "customer.subscription.paused"
   ) {
     return {
       ...base,
@@ -192,7 +195,8 @@ async function buildApplyPayload(
 
   if (
     event.type === "invoice.paid" ||
-    event.type === "invoice.payment_failed"
+    event.type === "invoice.payment_failed" ||
+    event.type === "invoice.payment_action_required"
   ) {
     const invoice = event.data.object as Stripe.Invoice;
     const subscriptionId = invoiceSubscriptionId(invoice);
@@ -204,7 +208,9 @@ async function buildApplyPayload(
         p_last_payment_error:
           event.type === "invoice.payment_failed"
             ? "Le paiement de la facture Stripe n’a pas abouti."
-            : null,
+            : event.type === "invoice.payment_action_required"
+              ? "Une authentification bancaire est nécessaire pour finaliser le paiement."
+              : null,
       };
     }
 
@@ -213,7 +219,9 @@ async function buildApplyPayload(
       event.type === "invoice.payment_failed"
         ? invoice.last_finalization_error?.message ??
           "Le paiement de la facture Stripe n’a pas abouti."
-        : null;
+        : event.type === "invoice.payment_action_required"
+          ? "Une authentification bancaire est nécessaire pour finaliser le paiement."
+          : null;
 
     return {
       ...base,

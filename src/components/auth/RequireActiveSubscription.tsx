@@ -19,7 +19,10 @@ function RequireActiveSubscription() {
     );
   }
 
-  if (!subscriptionAllowsAppAccess(activeSubscription?.status)) {
+  if (!subscriptionAllowsAppAccess(
+      activeSubscription?.status,
+      activeSubscription?.paymentGracePeriodEndsAt,
+    )) {
     return <Navigate to="/app/abonnement" replace />;
   }
 

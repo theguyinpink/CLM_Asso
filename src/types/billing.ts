@@ -26,12 +26,27 @@ export interface ClubSubscription {
   currentPeriodEnd: string | null;
   trialEnd: string | null;
   cancelAtPeriodEnd: boolean;
+  canceledAt: string | null;
+  paymentGracePeriodEndsAt: string | null;
+  billingPortalAvailable: boolean;
+  subscriptionManagementAvailable: boolean;
   canManageBilling: boolean;
   lastPaymentError: string | null;
+  lastPaymentErrorAt: string | null;
 }
 
 export function subscriptionAllowsAppAccess(
   status: SubscriptionStatus | null | undefined,
+  paymentGracePeriodEndsAt?: string | null,
 ) {
-  return status === "active" || status === "trialing";
+  if (status === "active" || status === "trialing") {
+    return true;
+  }
+
+  if (status !== "past_due" || !paymentGracePeriodEndsAt) {
+    return false;
+  }
+
+  const graceEnd = new Date(paymentGracePeriodEndsAt).getTime();
+  return Number.isFinite(graceEnd) && graceEnd > Date.now();
 }

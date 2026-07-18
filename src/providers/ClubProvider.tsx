@@ -71,8 +71,13 @@ interface SubscriptionRow {
   current_period_end: string | null;
   trial_end: string | null;
   cancel_at_period_end: boolean;
+  canceled_at: string | null;
+  payment_grace_period_ends_at: string | null;
+  billing_portal_available: boolean;
+  stripe_subscription_available: boolean;
   can_manage_billing: boolean;
   last_payment_error: string | null;
+  last_payment_error_at: string | null;
 }
 
 const ACTIVE_CLUB_STORAGE_KEY = "clm-asso-active-club-id";
@@ -117,8 +122,13 @@ function mapSubscription(row: SubscriptionRow): ClubSubscription {
     currentPeriodEnd: row.current_period_end,
     trialEnd: row.trial_end,
     cancelAtPeriodEnd: row.cancel_at_period_end,
+    canceledAt: row.canceled_at,
+    paymentGracePeriodEndsAt: row.payment_grace_period_ends_at,
+    billingPortalAvailable: row.billing_portal_available,
+    subscriptionManagementAvailable: row.stripe_subscription_available,
     canManageBilling: row.can_manage_billing,
     lastPaymentError: row.last_payment_error,
+    lastPaymentErrorAt: row.last_payment_error_at,
   };
 }
 

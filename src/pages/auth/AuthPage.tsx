@@ -9,6 +9,8 @@ import {
 } from "react-router";
 import {
   ArrowRight,
+  Eye,
+  EyeOff,
   LockKeyhole,
   Mail,
   ShieldCheck,
@@ -42,12 +44,9 @@ interface LocationState {
 }
 
 function getAppBaseUrl() {
-  const configuredUrl =
-    import.meta.env.VITE_APP_URL?.trim();
+  const configuredUrl = import.meta.env.VITE_APP_URL?.trim();
 
-  return (
-    configuredUrl || window.location.origin
-  ).replace(/\/+$/, "");
+  return (configuredUrl || window.location.origin).replace(/\/+$/, "");
 }
 
 function AuthPage({ mode }: AuthPageProps) {
@@ -55,35 +54,25 @@ function AuthPage({ mode }: AuthPageProps) {
   const location = useLocation();
   const [searchParams] = useSearchParams();
 
-  const {
-    user,
-    loading,
-    signIn,
-  } = useAuth();
+  const { user, loading, signIn } = useAuth();
 
-  const [firstName, setFirstName] =
-    useState("");
+  const [firstName, setFirstName] = useState("");
 
-  const [lastName, setLastName] =
-    useState("");
+  const [lastName, setLastName] = useState("");
 
-  const [email, setEmail] =
-    useState("");
+  const [email, setEmail] = useState("");
 
-  const [password, setPassword] =
-    useState("");
+  const [password, setPassword] = useState("");
 
-  const [submitting, setSubmitting] =
-    useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-  const [errorMessage, setErrorMessage] =
-    useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  const [successMessage, setSuccessMessage] =
-    useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const [legalAccepted, setLegalAccepted] =
-    useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+
+  const [legalAccepted, setLegalAccepted] = useState(false);
 
   const isLogin = mode === "login";
 
@@ -123,9 +112,7 @@ function AuthPage({ mode }: AuthPageProps) {
     return <Navigate to="/app" replace />;
   }
 
-  async function handleSubmit(
-    event: FormEvent<HTMLFormElement>,
-  ) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     setSubmitting(true);
@@ -133,13 +120,10 @@ function AuthPage({ mode }: AuthPageProps) {
     setSuccessMessage("");
 
     try {
-      const normalizedEmail =
-        email.trim().toLowerCase();
+      const normalizedEmail = email.trim().toLowerCase();
 
       if (!normalizedEmail) {
-        throw new Error(
-          "Veuillez saisir votre adresse e-mail.",
-        );
+        throw new Error("Veuillez saisir votre adresse e-mail.");
       }
 
       if (password.length < 10) {
@@ -149,40 +133,27 @@ function AuthPage({ mode }: AuthPageProps) {
       }
 
       if (mode === "login") {
-        await signIn(
-          normalizedEmail,
-          password,
-        );
+        await signIn(normalizedEmail, password);
 
-        const locationState =
-          location.state as LocationState | null;
+        const locationState = location.state as LocationState | null;
 
-        navigate(
-          locationState?.from ?? "/app",
-          {
-            replace: true,
-          },
-        );
+        navigate(locationState?.from ?? "/app", {
+          replace: true,
+        });
 
         return;
       }
 
-      const normalizedFirstName =
-        firstName.trim();
+      const normalizedFirstName = firstName.trim();
 
-      const normalizedLastName =
-        lastName.trim();
+      const normalizedLastName = lastName.trim();
 
       if (!normalizedFirstName) {
-        throw new Error(
-          "Veuillez saisir votre prénom.",
-        );
+        throw new Error("Veuillez saisir votre prénom.");
       }
 
       if (!normalizedLastName) {
-        throw new Error(
-          "Veuillez saisir votre nom.",
-        );
+        throw new Error("Veuillez saisir votre nom.");
       }
 
       if (!legalAccepted) {
@@ -191,36 +162,27 @@ function AuthPage({ mode }: AuthPageProps) {
         );
       }
 
-      const appBaseUrl =
-        getAppBaseUrl();
+      const appBaseUrl = getAppBaseUrl();
 
       const createClubPath = selectedPlanCode
         ? `/creer-mon-club?plan=${encodeURIComponent(selectedPlanCode)}`
         : "/creer-mon-club";
 
-      const {
-        data,
-        error,
-      } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: normalizedEmail,
         password,
 
         options: {
-          emailRedirectTo:
-            `${appBaseUrl}${createClubPath}`,
+          emailRedirectTo: `${appBaseUrl}${createClubPath}`,
 
           data: {
-            first_name:
-              normalizedFirstName,
+            first_name: normalizedFirstName,
 
-            last_name:
-              normalizedLastName,
+            last_name: normalizedLastName,
 
-            full_name:
-              `${normalizedFirstName} ${normalizedLastName}`,
+            full_name: `${normalizedFirstName} ${normalizedLastName}`,
 
-            selected_plan:
-              selectedPlanCode,
+            selected_plan: selectedPlanCode,
 
             legal_signup_accepted: true,
 
@@ -242,9 +204,7 @@ function AuthPage({ mode }: AuthPageProps) {
        * la confirmation d'adresse est désactivée.
        */
       if (data.session) {
-        window.location.replace(
-          `${appBaseUrl}${createClubPath}`,
-        );
+        window.location.replace(`${appBaseUrl}${createClubPath}`);
 
         return;
       }
@@ -255,10 +215,7 @@ function AuthPage({ mode }: AuthPageProps) {
 
       setPassword("");
     } catch (caughtError) {
-      console.error(
-        "Erreur d’authentification :",
-        caughtError,
-      );
+      console.error("Erreur d’authentification :", caughtError);
 
       setErrorMessage(
         caughtError instanceof Error
@@ -278,10 +235,7 @@ function AuthPage({ mode }: AuthPageProps) {
           className="auth-brand"
           aria-label="Retour à l’accueil de CLM Asso"
         >
-          <img
-            src={clmAssoLogo}
-            alt="CLM Asso"
-          />
+          <img src={clmAssoLogo} alt="CLM Asso" />
         </Link>
 
         <div>
@@ -296,8 +250,7 @@ function AuthPage({ mode }: AuthPageProps) {
           </h1>
 
           <p>
-            Gérez les équipes, rencontres,
-            convocations, tâches et documents
+            Gérez les équipes, rencontres, convocations, tâches et documents
             depuis un espace commun.
           </p>
         </div>
@@ -306,35 +259,19 @@ function AuthPage({ mode }: AuthPageProps) {
           <UsersRound size={22} />
 
           <div>
-            <strong>
-              Un espace pour tout le club
-            </strong>
+            <strong>Un espace pour tout le club</strong>
 
-            <span>
-              Dirigeants, encadrants,
-              bénévoles et membres.
-            </span>
+            <span>Dirigeants, encadrants, bénévoles et membres.</span>
           </div>
         </div>
       </section>
 
       <section className="auth-form-section">
-        <form
-          className="auth-form-card"
-          onSubmit={handleSubmit}
-        >
+        <form className="auth-form-card" onSubmit={handleSubmit}>
           <header>
-            <span>
-              {isLogin
-                ? "Bienvenue"
-                : "Créer votre compte"}
-            </span>
+            <span>{isLogin ? "Bienvenue" : "Créer votre compte"}</span>
 
-            <h2>
-              {isLogin
-                ? "Connexion à CLM Asso"
-                : "Rejoindre CLM Asso"}
-            </h2>
+            <h2>{isLogin ? "Connexion à CLM Asso" : "Rejoindre CLM Asso"}</h2>
 
             <p>
               {isLogin
@@ -347,17 +284,13 @@ function AuthPage({ mode }: AuthPageProps) {
             <div className="auth-selected-plan">
               <div>
                 <span>Abonnement sélectionné</span>
-                <strong>
-                  CLM Asso {selectedPlan.name}
-                </strong>
+                <strong>CLM Asso {selectedPlan.name}</strong>
                 <small>
                   {selectedPlan.monthlyPrice} € / mois · {selectedPlan.audience}
                 </small>
               </div>
 
-              <Link to="/tarifs">
-                Modifier
-              </Link>
+              <Link to="/tarifs">Modifier</Link>
             </div>
           )}
 
@@ -365,18 +298,13 @@ function AuthPage({ mode }: AuthPageProps) {
             <div className="auth-name-grid">
               <label>
                 Prénom
-
                 <div className="auth-input">
                   <UserRound size={17} />
 
                   <input
                     type="text"
                     value={firstName}
-                    onChange={(event) =>
-                      setFirstName(
-                        event.target.value,
-                      )
-                    }
+                    onChange={(event) => setFirstName(event.target.value)}
                     autoComplete="given-name"
                     required
                   />
@@ -385,18 +313,13 @@ function AuthPage({ mode }: AuthPageProps) {
 
               <label>
                 Nom
-
                 <div className="auth-input">
                   <UserRound size={17} />
 
                   <input
                     type="text"
                     value={lastName}
-                    onChange={(event) =>
-                      setLastName(
-                        event.target.value,
-                      )
-                    }
+                    onChange={(event) => setLastName(event.target.value)}
                     autoComplete="family-name"
                     required
                   />
@@ -407,16 +330,13 @@ function AuthPage({ mode }: AuthPageProps) {
 
           <label>
             Adresse e-mail
-
             <div className="auth-input">
               <Mail size={17} />
 
               <input
                 type="email"
                 value={email}
-                onChange={(event) =>
-                  setEmail(event.target.value)
-                }
+                onChange={(event) => setEmail(event.target.value)}
                 autoComplete="email"
                 required
               />
@@ -425,26 +345,35 @@ function AuthPage({ mode }: AuthPageProps) {
 
           <label>
             Mot de passe
-
             <div className="auth-input">
               <LockKeyhole size={17} />
 
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 value={password}
-                onChange={(event) =>
-                  setPassword(
-                    event.target.value,
-                  )
-                }
-                autoComplete={
-                  isLogin
-                    ? "current-password"
-                    : "new-password"
-                }
+                onChange={(event) => setPassword(event.target.value)}
+                autoComplete={isLogin ? "current-password" : "new-password"}
                 minLength={10}
                 required
               />
+
+              <button
+                type="button"
+                className="auth-password-toggle"
+                onClick={() => setShowPassword((currentValue) => !currentValue)}
+                aria-label={
+                  showPassword
+                    ? "Masquer le mot de passe"
+                    : "Afficher le mot de passe"
+                }
+                title={
+                  showPassword
+                    ? "Masquer le mot de passe"
+                    : "Afficher le mot de passe"
+                }
+              >
+                {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+              </button>
             </div>
           </label>
 
@@ -453,9 +382,7 @@ function AuthPage({ mode }: AuthPageProps) {
               <input
                 type="checkbox"
                 checked={legalAccepted}
-                onChange={(event) =>
-                  setLegalAccepted(event.target.checked)
-                }
+                onChange={(event) => setLegalAccepted(event.target.checked)}
                 required
               />
 
@@ -475,16 +402,14 @@ function AuthPage({ mode }: AuthPageProps) {
                   rel="noreferrer"
                 >
                   Politique de confidentialité
-                </Link>.
+                </Link>
+                .
               </span>
             </label>
           )}
 
           {isLogin && (
-            <Link
-              className="auth-forgot-link"
-              to="/mot-de-passe-oublie"
-            >
+            <Link className="auth-forgot-link" to="/mot-de-passe-oublie">
               Mot de passe oublié ?
             </Link>
           )}
@@ -512,31 +437,21 @@ function AuthPage({ mode }: AuthPageProps) {
                 ? "Se connecter"
                 : "Créer mon compte"}
 
-            {!submitting && (
-              <ArrowRight size={17} />
-            )}
+            {!submitting && <ArrowRight size={17} />}
           </button>
 
           <footer>
             {isLogin ? (
               <p>
-                Pas encore de compte ?{" "}
-                <Link to="/inscription">
-                  S’inscrire
-                </Link>
+                Pas encore de compte ? <Link to="/inscription">S’inscrire</Link>
               </p>
             ) : (
               <p>
-                Déjà inscrit ?{" "}
-                <Link to="/connexion">
-                  Se connecter
-                </Link>
+                Déjà inscrit ? <Link to="/connexion">Se connecter</Link>
               </p>
             )}
 
-            <Link to="/">
-              Retour au site
-            </Link>
+            <Link to="/">Retour au site</Link>
           </footer>
         </form>
       </section>

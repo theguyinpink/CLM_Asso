@@ -2,21 +2,35 @@ import { useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
   BadgeCheck,
+  CalendarClock,
   Check,
   CircleAlert,
   CreditCard,
+  ExternalLink,
   FileText,
   LoaderCircle,
   LockKeyhole,
+  ReceiptText,
   RefreshCw,
   ShieldCheck,
+  SwitchCamera,
   UsersRound,
+  WalletCards,
+  XCircle,
 } from "lucide-react";
 import { Link, useSearchParams } from "react-router";
 
 import { useClub } from "../../hooks/useClub";
+import {
+  SUBSCRIPTION_PLAN_LIST,
+  type SubscriptionPlanCode,
+} from "../../lib/subscriptionPlans";
 import { LEGAL_CONFIG } from "../../legal/legalConfig";
-import { createSubscriptionCheckout } from "../../services/billingService";
+import {
+  createBillingPortalSession,
+  createSubscriptionCheckout,
+  type BillingPortalAction,
+} from "../../services/billingService";
 import { acceptBillingTerms } from "../../services/legalService";
 import {
   subscriptionAllowsAppAccess,
@@ -79,12 +93,17 @@ function SubscriptionPage() {
 
   const [searchParams, setSearchParams] = useSearchParams();
   const [startingCheckout, setStartingCheckout] = useState(false);
+  const [portalAction, setPortalAction] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [actionError, setActionError] = useState("");
   const [billingTermsAccepted, setBillingTermsAccepted] = useState(false);
 
   const checkoutResult = searchParams.get("checkout");
-  const hasAccess = subscriptionAllowsAppAccess(activeSubscription?.status);
+  const portalResult = searchParams.get("portal");
+  const hasAccess = subscriptionAllowsAppAccess(
+    activeSubscription?.status,
+    activeSubscription?.paymentGracePeriodEndsAt,
+  );
 
   const paymentButtonAvailable = useMemo(
     () =>
@@ -98,20 +117,34 @@ function SubscriptionPage() {
     [activeSubscription],
   );
 
+  const canOpenPortal =
+    activeSubscription?.canManageBilling === true &&
+    activeSubscription.billingPortalAvailable;
+
+  const canModifySubscription =
+    canOpenPortal &&
+    activeSubscription?.subscriptionManagementAvailable === true &&
+    ["active", "trialing"].includes(activeSubscription.status);
+
   useEffect(() => {
-    if (checkoutResult !== "success" || hasAccess) {
+    if (
+      (checkoutResult !== "success" && portalResult !== "returned") ||
+      !activeSubscription
+    ) {
       return;
     }
 
     let cancelled = false;
     let attempts = 0;
 
+    void refreshSubscription().catch(() => undefined);
+
     const timer = window.setInterval(() => {
       attempts += 1;
 
       void refreshSubscription().catch(() => undefined);
 
-      if (cancelled || attempts >= 10) {
+      if (cancelled || attempts >= 8) {
         window.clearInterval(timer);
       }
     }, 2000);
@@ -120,7 +153,7 @@ function SubscriptionPage() {
       cancelled = true;
       window.clearInterval(timer);
     };
-  }, [checkoutResult, hasAccess, refreshSubscription]);
+  }, [activeSubscription, checkoutResult, portalResult, refreshSubscription]);
 
   async function handleCheckout() {
     if (!activeClub) {
@@ -151,6 +184,38 @@ function SubscriptionPage() {
     }
   }
 
+  async function handlePortal(
+    action: BillingPortalAction,
+    targetPlanCode?: SubscriptionPlanCode,
+  ) {
+    if (!activeClub) {
+      return;
+    }
+
+    const actionKey = targetPlanCode
+      ? `${action}:${targetPlanCode}`
+      : action;
+
+    setPortalAction(actionKey);
+    setActionError("");
+
+    try {
+      const portal = await createBillingPortalSession(
+        activeClub.id,
+        action,
+        targetPlanCode,
+      );
+      window.location.assign(portal.url);
+    } catch (caughtError) {
+      setActionError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : "Impossible d’ouvrir le portail Stripe.",
+      );
+      setPortalAction(null);
+    }
+  }
+
   async function handleRefresh() {
     setRefreshing(true);
     setActionError("");
@@ -168,10 +233,11 @@ function SubscriptionPage() {
     }
   }
 
-  function dismissCheckoutMessage() {
+  function dismissResultMessage() {
     const next = new URLSearchParams(searchParams);
     next.delete("checkout");
     next.delete("session_id");
+    next.delete("portal");
     setSearchParams(next, { replace: true });
   }
 
@@ -202,6 +268,7 @@ function SubscriptionPage() {
   }
 
   const periodEnd = formatDate(activeSubscription.currentPeriodEnd);
+  const graceEnd = formatDate(activeSubscription.paymentGracePeriodEndsAt);
 
   return (
     <div className="subscription-page">
@@ -210,8 +277,9 @@ function SubscriptionPage() {
           <span>Facturation CLM Asso</span>
           <h1>Abonnement du club</h1>
           <p>
-            Finalisez le paiement de {activeClub?.name ?? "votre club"} pour
-            déverrouiller l’application.
+            {hasAccess
+              ? `Gérez l’offre et la facturation de ${activeClub?.name ?? "votre club"}.`
+              : `Finalisez ou régularisez l’abonnement de ${activeClub?.name ?? "votre club"}.`}
           </p>
         </div>
 
@@ -233,7 +301,7 @@ function SubscriptionPage() {
               s’actualise automatiquement pendant quelques secondes.
             </p>
           </div>
-          <button type="button" onClick={dismissCheckoutMessage}>
+          <button type="button" onClick={dismissResultMessage}>
             Fermer
           </button>
         </div>
@@ -246,9 +314,50 @@ function SubscriptionPage() {
             <strong>Paiement interrompu</strong>
             <p>Aucun abonnement n’a été activé. Vous pouvez reprendre plus tard.</p>
           </div>
-          <button type="button" onClick={dismissCheckoutMessage}>
+          <button type="button" onClick={dismissResultMessage}>
             Fermer
           </button>
+        </div>
+      )}
+
+      {portalResult === "returned" && (
+        <div className="subscription-alert subscription-alert--success">
+          <RefreshCw size={20} />
+          <div>
+            <strong>Retour du portail Stripe</strong>
+            <p>
+              Les modifications sont en cours de synchronisation avec CLM Asso.
+            </p>
+          </div>
+          <button type="button" onClick={dismissResultMessage}>
+            Fermer
+          </button>
+        </div>
+      )}
+
+      {activeSubscription.status === "past_due" && graceEnd && (
+        <div className="subscription-alert subscription-alert--warning">
+          <CalendarClock size={20} />
+          <div>
+            <strong>Délai de régularisation actif</strong>
+            <p>
+              Le club conserve temporairement son accès jusqu’au {graceEnd}.
+              Mettez le moyen de paiement à jour avant cette date.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {activeSubscription.cancelAtPeriodEnd && periodEnd && (
+        <div className="subscription-alert subscription-alert--warning">
+          <CalendarClock size={20} />
+          <div>
+            <strong>Résiliation programmée</strong>
+            <p>
+              L’accès reste actif jusqu’au {periodEnd}. Le portail Stripe permet
+              d’annuler cette résiliation avant l’échéance.
+            </p>
+          </div>
         </div>
       )}
 
@@ -316,16 +425,17 @@ function SubscriptionPage() {
         </article>
 
         <aside className="subscription-action-card">
-          {hasAccess ? (
+          {canOpenPortal ? (
             <>
               <span className="subscription-action-card__icon subscription-action-card__icon--success">
-                <BadgeCheck size={28} />
+                <WalletCards size={28} />
               </span>
-              <h2>Votre club est activé</h2>
+              <h2>Gérer la facturation</h2>
               <p>
-                Toutes les fonctionnalités prévues par votre offre sont
-                disponibles.
+                Stripe sécurise les moyens de paiement, les factures et la
+                résiliation de l’abonnement.
               </p>
+
               {periodEnd && (
                 <small>
                   {activeSubscription.cancelAtPeriodEnd
@@ -333,87 +443,103 @@ function SubscriptionPage() {
                     : `Prochaine échéance le ${periodEnd}`}
                 </small>
               )}
-              <Link to="/app/tableau-de-bord" className="subscription-primary-action">
-                Accéder au tableau de bord
-                <ArrowRight size={17} />
-              </Link>
+
+              <button
+                type="button"
+                className="subscription-primary-action"
+                disabled={portalAction !== null}
+                onClick={() => void handlePortal("home")}
+              >
+                {portalAction === "home" ? (
+                  <LoaderCircle size={17} />
+                ) : (
+                  <ExternalLink size={17} />
+                )}
+                Ouvrir le portail Stripe
+              </button>
+
+              <button
+                type="button"
+                className="subscription-refresh-action"
+                disabled={portalAction !== null}
+                onClick={() => void handlePortal("payment_method")}
+              >
+                {portalAction === "payment_method" ? (
+                  <LoaderCircle size={16} />
+                ) : (
+                  <CreditCard size={16} />
+                )}
+                Modifier le moyen de paiement
+              </button>
+
+              {activeSubscription.subscriptionManagementAvailable &&
+                ["active", "trialing", "past_due"].includes(
+                  activeSubscription.status,
+                ) && (
+                  <button
+                    type="button"
+                    className="subscription-danger-action"
+                    disabled={portalAction !== null}
+                    onClick={() => void handlePortal("cancel")}
+                  >
+                    {portalAction === "cancel" ? (
+                      <LoaderCircle size={16} />
+                    ) : (
+                      <XCircle size={16} />
+                    )}
+                    Gérer la résiliation
+                  </button>
+                )}
             </>
           ) : paymentButtonAvailable ? (
             <>
               <span className="subscription-action-card__icon">
                 <CreditCard size={28} />
               </span>
-              <h2>Activer CLM Asso</h2>
+              <h2>Activer votre club</h2>
               <p>
-                Le paiement est réalisé sur la page sécurisée de Stripe. Aucun
-                numéro de carte n’est enregistré par CLM Asso.
+                Le paiement est traité sur la page sécurisée de Stripe. CLM Asso
+                ne reçoit jamais les données complètes de votre carte.
               </p>
 
-              <div className="subscription-legal-block">
-                <label className="subscription-legal-checkbox">
-                  <input
-                    type="checkbox"
-                    checked={billingTermsAccepted}
-                    onChange={(event) =>
-                      setBillingTermsAccepted(event.target.checked)
-                    }
-                  />
-                  <span>
-                    J’accepte les{" "}
-                    <Link
-                      to={LEGAL_CONFIG.documents.termsOfSale.route}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      Conditions générales de vente
-                    </Link>{" "}
-                    et confirme avoir consulté les{" "}
-                    <Link
-                      to={LEGAL_CONFIG.documents.termsOfUse.route}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      Conditions générales d’utilisation
-                    </Link>.
-                  </span>
-                </label>
-
-                <small>
-                  L’acceptation de la version {LEGAL_CONFIG.documents.termsOfSale.version}
-                  {" "}des CGV sera horodatée et liée à ce club.
-                </small>
-              </div>
+              <label className="form-check subscription-legal-check">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  checked={billingTermsAccepted}
+                  onChange={(event) =>
+                    setBillingTermsAccepted(event.target.checked)
+                  }
+                />
+                <span className="form-check-label">
+                  J’accepte les <Link to="/cgv">CGV</Link> version {" "}
+                  {LEGAL_CONFIG.documents.termsOfSale.version}.
+                </span>
+              </label>
 
               <button
                 type="button"
                 className="subscription-primary-action"
-                onClick={() => void handleCheckout()}
                 disabled={startingCheckout}
+                onClick={() => void handleCheckout()}
               >
                 {startingCheckout ? (
-                  <LoaderCircle size={18} />
+                  <LoaderCircle size={17} />
                 ) : (
-                  <CreditCard size={18} />
+                  <ArrowRight size={17} />
                 )}
-                {startingCheckout
-                  ? "Ouverture de Stripe…"
-                  : `Payer ${formatPrice(
-                      activeSubscription.monthlyPriceCents,
-                      activeSubscription.currency,
-                    )} / mois`}
+                Procéder au paiement
               </button>
-
-              <small>Environnement Stripe de test pendant l’intégration.</small>
             </>
           ) : (
             <>
               <span className="subscription-action-card__icon">
-                <LockKeyhole size={28} />
+                <ReceiptText size={28} />
               </span>
-              <h2>Action du propriétaire requise</h2>
+              <h2>Informations de facturation</h2>
               <p>
-                Seul le propriétaire ou un administrateur du club peut gérer
-                le paiement de l’abonnement.
+                Seul le propriétaire ou un administrateur du club peut modifier
+                l’abonnement.
               </p>
             </>
           )}
@@ -421,12 +547,22 @@ function SubscriptionPage() {
           <button
             type="button"
             className="subscription-refresh-action"
-            onClick={() => void handleRefresh()}
             disabled={refreshing}
+            onClick={() => void handleRefresh()}
           >
-            <RefreshCw size={16} />
+            <RefreshCw size={15} />
             {refreshing ? "Actualisation…" : "Actualiser le statut"}
           </button>
+
+          {hasAccess && (
+            <Link
+              className="subscription-dashboard-link"
+              to="/app/tableau-de-bord"
+            >
+              Accéder au tableau de bord
+              <ArrowRight size={16} />
+            </Link>
+          )}
 
           {actionError && (
             <p className="subscription-action-error" role="alert">
@@ -435,6 +571,87 @@ function SubscriptionPage() {
           )}
         </aside>
       </div>
+
+      {canModifySubscription && (
+        <section className="subscription-plan-switcher">
+          <div className="subscription-plan-switcher__header">
+            <div>
+              <span>Changer d’offre</span>
+              <h2>Une formule adaptée à la taille du club</h2>
+              <p>
+                CLM Asso vérifie le nombre de licenciés déclaré avant d’ouvrir
+                la confirmation Stripe.
+              </p>
+            </div>
+            <SwitchCamera size={24} />
+          </div>
+
+          <div className="subscription-plan-switcher__grid">
+            {SUBSCRIPTION_PLAN_LIST.map((plan) => {
+              const isCurrent = plan.code === activeSubscription.planCode;
+              const isEligible =
+                plan.maximumLicensees === null ||
+                activeSubscription.declaredLicenseesCount <=
+                  plan.maximumLicensees;
+              const actionKey = `change_plan:${plan.code}`;
+
+              return (
+                <article
+                  key={plan.code}
+                  className={`subscription-switch-card ${isCurrent ? "subscription-switch-card--current" : ""}`}
+                >
+                  <div>
+                    <span>{isCurrent ? "Offre actuelle" : "CLM Asso"}</span>
+                    <h3>{plan.name}</h3>
+                    <p>{plan.audience}</p>
+                  </div>
+
+                  <strong>
+                    {plan.monthlyPrice} €
+                    <small>/ mois</small>
+                  </strong>
+
+                  <ul>
+                    <li><Check size={15} /> {plan.storageLabel}</li>
+                    <li><Check size={15} /> Messagerie et gestion du club</li>
+                  </ul>
+
+                  <button
+                    type="button"
+                    disabled={
+                      isCurrent ||
+                      !isEligible ||
+                      portalAction !== null
+                    }
+                    onClick={() =>
+                      void handlePortal("change_plan", plan.code)
+                    }
+                  >
+                    {portalAction === actionKey ? (
+                      <LoaderCircle size={16} />
+                    ) : isCurrent ? (
+                      <BadgeCheck size={16} />
+                    ) : (
+                      <SwitchCamera size={16} />
+                    )}
+                    {isCurrent
+                      ? "Offre actuelle"
+                      : isEligible
+                        ? `Passer à ${plan.name}`
+                        : `Limité à ${plan.maximumLicensees} licenciés`}
+                  </button>
+                </article>
+              );
+            })}
+          </div>
+
+          <p className="subscription-plan-switcher__note">
+            Stripe affiche le montant exact, les éventuels proratas et la date
+            d’application avant toute confirmation. Une baisse de tarif peut être
+            programmée à la prochaine échéance selon la configuration du portail.
+          </p>
+        </section>
+      )}
     </div>
   );
 }

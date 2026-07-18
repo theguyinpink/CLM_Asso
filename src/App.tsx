@@ -113,7 +113,10 @@ function AppIndexRedirect() {
   return (
     <Navigate
       to={
-        subscriptionAllowsAppAccess(activeSubscription?.status)
+        subscriptionAllowsAppAccess(
+          activeSubscription?.status,
+          activeSubscription?.paymentGracePeriodEndsAt,
+        )
           ? "/app/tableau-de-bord"
           : "/app/abonnement"
       }
