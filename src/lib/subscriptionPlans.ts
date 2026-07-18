@@ -24,8 +24,8 @@ export const SUBSCRIPTION_PLANS: Record<
     code: "essential",
     name: "Essentiel",
     monthlyPrice: 19,
-    audience: "Jusqu’à 100 licenciés",
-    maximumLicensees: 100,
+    audience: "Pour organiser simplement le quotidien du club",
+    maximumLicensees: null,
     documentsEnabled: false,
     storageLabel: "Sans espace Documents",
   },
@@ -33,8 +33,8 @@ export const SUBSCRIPTION_PLANS: Record<
     code: "club",
     name: "Club",
     monthlyPrice: 39,
-    audience: "Jusqu’à 300 licenciés",
-    maximumLicensees: 300,
+    audience: "Pour centraliser aussi les documents du club",
+    maximumLicensees: null,
     documentsEnabled: true,
     storageLabel: "5 Go de documents",
   },
@@ -42,7 +42,7 @@ export const SUBSCRIPTION_PLANS: Record<
     code: "grand_club",
     name: "Grand Club",
     monthlyPrice: 49,
-    audience: "Plus de 300 licenciés",
+    audience: "Pour les besoins documentaires plus importants",
     maximumLicensees: null,
     documentsEnabled: true,
     storageLabel: "20 Go de documents",
@@ -106,6 +106,9 @@ export function clearStoredSubscriptionPlanCode() {
   );
 }
 
+/**
+ * Recommandation indicative uniquement : elle ne bloque jamais le choix.
+ */
 export function getMinimumPlanForLicensees(
   licenseesCount: number,
 ): SubscriptionPlanCode {
@@ -120,30 +123,14 @@ export function getMinimumPlanForLicensees(
   return "grand_club";
 }
 
+/**
+ * Le nombre de licenciés sert uniquement d'information et ne bloque plus
+ * le choix ou le changement d'une offre.
+ */
 export function validatePlanForLicensees(
   planCode: SubscriptionPlanCode,
-  licenseesCount: number,
+  _licenseesCount: number,
 ) {
-  const plan = SUBSCRIPTION_PLANS[planCode];
-
-  if (
-    plan.maximumLicensees !== null &&
-    licenseesCount > plan.maximumLicensees
-  ) {
-    const minimumPlanCode =
-      getMinimumPlanForLicensees(licenseesCount);
-
-    return {
-      valid: false as const,
-      minimumPlanCode,
-      message:
-        `L’offre ${plan.name} est limitée à ` +
-        `${plan.maximumLicensees} licenciés. ` +
-        `Choisissez au minimum l’offre ` +
-        `${SUBSCRIPTION_PLANS[minimumPlanCode].name}.`,
-    };
-  }
-
   return {
     valid: true as const,
     minimumPlanCode: planCode,
