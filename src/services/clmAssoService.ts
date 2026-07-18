@@ -72,14 +72,27 @@ function validateDocumentFile(file: File) {
   }
 
   if (mimeType && BLOCKED_DOCUMENT_MIME_TYPES.has(mimeType)) {
-    throw new Error("Ce type de fichier est bloqué pour des raisons de sécurité.");
+    throw new Error(
+      "Ce type de fichier est bloqué pour des raisons de sécurité.",
+    );
   }
 }
 
 function throwIfError(error: { message: string } | null) {
-  if (error) {
-    throw new Error(error.message);
+  if (!error) return;
+
+  const normalizedMessage = error.message.toLowerCase();
+
+  if (
+    normalizedMessage.includes("row-level security") ||
+    normalizedMessage.includes("unauthorized")
+  ) {
+    throw new Error(
+      "Cette action n’est pas autorisée avec votre offre actuelle ou vos permissions.",
+    );
   }
+
+  throw new Error(error.message);
 }
 
 export async function listMembers(clubId: string): Promise<ClubMember[]> {
@@ -723,13 +736,55 @@ export async function listDocuments(clubId: string): Promise<ClubDocument[]> {
   return (data ?? []) as ClubDocument[];
 }
 
+interface DocumentStorageStatus {
+  plan_code: string;
+  plan_name: string;
+  documents_enabled: boolean;
+  used_bytes: number;
+  limit_bytes: number;
+  remaining_bytes: number;
+  usage_percent: number;
+}
+
+async function assertDocumentUploadAllowed(clubId: string, fileSize: number) {
+  const { data, error } = await supabase.rpc(
+    "clm_asso_get_document_storage_status",
+    {
+      p_club_id: clubId,
+    },
+  );
+
+  throwIfError(error);
+
+  const status = (data?.[0] ?? null) as DocumentStorageStatus | null;
+
+  if (!status) {
+    throw new Error("Impossible de vérifier votre offre d’abonnement.");
+  }
+
+  if (!status.documents_enabled || status.limit_bytes <= 0) {
+    throw new Error(
+      "L’offre Essentiel n’inclut pas l’espace Documents. Passez à l’offre Club ou Grand Club pour importer ou créer des documents.",
+    );
+  }
+
+  if (status.used_bytes + fileSize > status.limit_bytes) {
+    const usedGb = (status.used_bytes / 1024 ** 3).toFixed(2);
+    const limitGb = (status.limit_bytes / 1024 ** 3).toFixed(0);
+
+    throw new Error(
+      `Limite de stockage atteinte pour l’offre ${status.plan_name}. ${usedGb} Go utilisés sur ${limitGb} Go. Supprimez des documents ou passez à l’offre supérieure.`,
+    );
+  }
+}
+
 export async function uploadDocument(
   clubId: string,
   userId: string,
   file: File,
   folder: string,
 ) {
-  validateDocumentFile(file);
+  await assertDocumentUploadAllowed(clubId, file.size);
 
   const safeName = file.name.replace(/[^a-zA-Z0-9._-]+/g, "-");
   const storagePath = `${clubId}/${crypto.randomUUID()}-${safeName}`;
@@ -805,7 +860,10 @@ export async function downloadDocument(document: ClubDocument) {
 export async function deleteDocument(document: ClubDocument) {
   const versions = await listDocumentVersions(document.id);
   const paths = Array.from(
-    new Set([document.storage_path, ...versions.map((version) => version.storage_path)]),
+    new Set([
+      document.storage_path,
+      ...versions.map((version) => version.storage_path),
+    ]),
   );
 
   if (paths.length > 0) {
@@ -1094,7 +1152,9 @@ export async function updateClubSettings(
   throwIfError(error);
 }
 
-export async function listInvitations(clubId: string): Promise<ClubInvitation[]> {
+export async function listInvitations(
+  clubId: string,
+): Promise<ClubInvitation[]> {
   const { data, error } = await supabase
     .from("clm_asso_invitations")
     .select("*")
@@ -1246,7 +1306,7 @@ export async function listActivityLogs(clubId: string, limit = 20) {
   return logs.map((log) => ({
     ...log,
     actor_display_name: log.actor_user_id
-      ? actorNames.get(log.actor_user_id) ?? "Membre du club"
+      ? (actorNames.get(log.actor_user_id) ?? "Membre du club")
       : "Action automatique",
   }));
 }
@@ -1269,6 +1329,7 @@ export async function replaceDocument(
 ) {
   validateDocumentFile(file);
 
+  await assertDocumentUploadAllowed(document.club_id, file.size);
   const versions = await listDocumentVersions(document.id);
   const nextVersion = (versions[0]?.version_number ?? 0) + 1;
   const safeName = file.name.replace(/[^a-zA-Z0-9._-]+/g, "-");
