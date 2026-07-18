@@ -1,0 +1,443 @@
+import type { FormEvent } from "react";
+import { useState } from "react";
+import {
+  Link,
+  Navigate,
+  useLocation,
+  useNavigate,
+} from "react-router";
+import {
+  ArrowRight,
+  LockKeyhole,
+  Mail,
+  ShieldCheck,
+  UserRound,
+  UsersRound,
+} from "lucide-react";
+
+import clmAssoLogo from "../../assets/logo.png";
+import AppLoadingScreen from "../../components/auth/AppLoadingScreen";
+import { useAuth } from "../../hooks/useAuth";
+import { supabase } from "../../lib/supabase";
+
+import "../../styles/auth.css";
+
+type AuthMode = "login" | "register";
+
+interface AuthPageProps {
+  mode: AuthMode;
+}
+
+interface LocationState {
+  from?: string;
+}
+
+function getAppBaseUrl() {
+  const configuredUrl =
+    import.meta.env.VITE_APP_URL?.trim();
+
+  return (
+    configuredUrl || window.location.origin
+  ).replace(/\/+$/, "");
+}
+
+function AuthPage({ mode }: AuthPageProps) {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const {
+    user,
+    loading,
+    signIn,
+  } = useAuth();
+
+  const [firstName, setFirstName] =
+    useState("");
+
+  const [lastName, setLastName] =
+    useState("");
+
+  const [email, setEmail] =
+    useState("");
+
+  const [password, setPassword] =
+    useState("");
+
+  const [submitting, setSubmitting] =
+    useState(false);
+
+  const [errorMessage, setErrorMessage] =
+    useState("");
+
+  const [successMessage, setSuccessMessage] =
+    useState("");
+
+  const isLogin = mode === "login";
+
+  if (loading) {
+    return <AppLoadingScreen />;
+  }
+
+  /*
+   * Lorsqu'un utilisateur est déjà connecté,
+   * il est envoyé vers son espace.
+   *
+   * Exception : la page de création de compte peut
+   * terminer elle-même sa redirection vers
+   * /creer-mon-club juste après l'inscription.
+   */
+  if (user) {
+    return <Navigate to="/app" replace />;
+  }
+
+  async function handleSubmit(
+    event: FormEvent<HTMLFormElement>,
+  ) {
+    event.preventDefault();
+
+    setSubmitting(true);
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    try {
+      const normalizedEmail =
+        email.trim().toLowerCase();
+
+      if (!normalizedEmail) {
+        throw new Error(
+          "Veuillez saisir votre adresse e-mail.",
+        );
+      }
+
+      if (password.length < 10) {
+        throw new Error(
+          "Le mot de passe doit contenir au moins 10 caractères.",
+        );
+      }
+
+      if (mode === "login") {
+        await signIn(
+          normalizedEmail,
+          password,
+        );
+
+        const locationState =
+          location.state as LocationState | null;
+
+        navigate(
+          locationState?.from ?? "/app",
+          {
+            replace: true,
+          },
+        );
+
+        return;
+      }
+
+      const normalizedFirstName =
+        firstName.trim();
+
+      const normalizedLastName =
+        lastName.trim();
+
+      if (!normalizedFirstName) {
+        throw new Error(
+          "Veuillez saisir votre prénom.",
+        );
+      }
+
+      if (!normalizedLastName) {
+        throw new Error(
+          "Veuillez saisir votre nom.",
+        );
+      }
+
+      const appBaseUrl =
+        getAppBaseUrl();
+
+      const {
+        data,
+        error,
+      } = await supabase.auth.signUp({
+        email: normalizedEmail,
+        password,
+
+        options: {
+          emailRedirectTo:
+            `${appBaseUrl}/creer-mon-club`,
+
+          data: {
+            first_name:
+              normalizedFirstName,
+
+            last_name:
+              normalizedLastName,
+
+            full_name:
+              `${normalizedFirstName} ${normalizedLastName}`,
+          },
+        },
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      /*
+       * Si une session existe immédiatement,
+       * la confirmation d'adresse est désactivée.
+       */
+      if (data.session) {
+        window.location.replace(
+          `${appBaseUrl}/creer-mon-club`,
+        );
+
+        return;
+      }
+
+      setSuccessMessage(
+        "Votre compte a été créé. Un e-mail de confirmation vient de vous être envoyé. Ouvrez-le pour confirmer votre adresse et créer votre club.",
+      );
+
+      setPassword("");
+    } catch (caughtError) {
+      console.error(
+        "Erreur d’authentification :",
+        caughtError,
+      );
+
+      setErrorMessage(
+        caughtError instanceof Error
+          ? caughtError.message
+          : "Une erreur est survenue.",
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <main className="auth-page">
+      <section className="auth-presentation">
+        <Link
+          to="/"
+          className="auth-brand"
+          aria-label="Retour à l’accueil de CLM Asso"
+        >
+          <img
+            src={clmAssoLogo}
+            alt="CLM Asso"
+          />
+        </Link>
+
+        <div>
+          <span className="auth-presentation-badge">
+            <ShieldCheck size={16} />
+            Espace sécurisé
+          </span>
+
+          <h1>
+            Toute l’organisation du club,
+            <span> au même endroit.</span>
+          </h1>
+
+          <p>
+            Gérez les équipes, rencontres,
+            convocations, tâches et documents
+            depuis un espace commun.
+          </p>
+        </div>
+
+        <div className="auth-presentation-feature">
+          <UsersRound size={22} />
+
+          <div>
+            <strong>
+              Un espace pour tout le club
+            </strong>
+
+            <span>
+              Dirigeants, encadrants,
+              bénévoles et membres.
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <section className="auth-form-section">
+        <form
+          className="auth-form-card"
+          onSubmit={handleSubmit}
+        >
+          <header>
+            <span>
+              {isLogin
+                ? "Bienvenue"
+                : "Créer votre compte"}
+            </span>
+
+            <h2>
+              {isLogin
+                ? "Connexion à CLM Asso"
+                : "Rejoindre CLM Asso"}
+            </h2>
+
+            <p>
+              {isLogin
+                ? "Accédez à l’espace de votre club."
+                : "Créez votre compte personnel avant de rejoindre ou créer un club."}
+            </p>
+          </header>
+
+          {!isLogin && (
+            <div className="auth-name-grid">
+              <label>
+                Prénom
+
+                <div className="auth-input">
+                  <UserRound size={17} />
+
+                  <input
+                    type="text"
+                    value={firstName}
+                    onChange={(event) =>
+                      setFirstName(
+                        event.target.value,
+                      )
+                    }
+                    autoComplete="given-name"
+                    required
+                  />
+                </div>
+              </label>
+
+              <label>
+                Nom
+
+                <div className="auth-input">
+                  <UserRound size={17} />
+
+                  <input
+                    type="text"
+                    value={lastName}
+                    onChange={(event) =>
+                      setLastName(
+                        event.target.value,
+                      )
+                    }
+                    autoComplete="family-name"
+                    required
+                  />
+                </div>
+              </label>
+            </div>
+          )}
+
+          <label>
+            Adresse e-mail
+
+            <div className="auth-input">
+              <Mail size={17} />
+
+              <input
+                type="email"
+                value={email}
+                onChange={(event) =>
+                  setEmail(event.target.value)
+                }
+                autoComplete="email"
+                required
+              />
+            </div>
+          </label>
+
+          <label>
+            Mot de passe
+
+            <div className="auth-input">
+              <LockKeyhole size={17} />
+
+              <input
+                type="password"
+                value={password}
+                onChange={(event) =>
+                  setPassword(
+                    event.target.value,
+                  )
+                }
+                autoComplete={
+                  isLogin
+                    ? "current-password"
+                    : "new-password"
+                }
+                minLength={10}
+                required
+              />
+            </div>
+          </label>
+
+          {isLogin && (
+            <Link
+              className="auth-forgot-link"
+              to="/mot-de-passe-oublie"
+            >
+              Mot de passe oublié ?
+            </Link>
+          )}
+
+          {errorMessage && (
+            <div className="auth-message auth-message--error">
+              {errorMessage}
+            </div>
+          )}
+
+          {successMessage && (
+            <div className="auth-message auth-message--success">
+              {successMessage}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            className="auth-submit-button"
+            disabled={submitting}
+          >
+            {submitting
+              ? "Chargement…"
+              : isLogin
+                ? "Se connecter"
+                : "Créer mon compte"}
+
+            {!submitting && (
+              <ArrowRight size={17} />
+            )}
+          </button>
+
+          <footer>
+            {isLogin ? (
+              <p>
+                Pas encore de compte ?{" "}
+                <Link to="/inscription">
+                  S’inscrire
+                </Link>
+              </p>
+            ) : (
+              <p>
+                Déjà inscrit ?{" "}
+                <Link to="/connexion">
+                  Se connecter
+                </Link>
+              </p>
+            )}
+
+            <Link to="/">
+              Retour au site
+            </Link>
+          </footer>
+        </form>
+      </section>
+    </main>
+  );
+}
+
+export default AuthPage;

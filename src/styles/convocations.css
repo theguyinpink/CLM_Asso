@@ -1,0 +1,840 @@
+.convocations-page {
+  max-width: 1700px;
+  margin-inline: auto;
+}
+
+/* En-tête */
+
+.convocations-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 25px;
+
+  margin-bottom: 22px;
+}
+
+.convocations-heading__title {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.convocations-heading__icon {
+  width: 55px;
+  height: 55px;
+
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+
+  border-radius: 14px;
+
+  background: linear-gradient(
+    145deg,
+    #0875f5,
+    #075ed0
+  );
+
+  box-shadow: 0 10px 25px rgb(8 117 245 / 24%);
+
+  color: #ffffff;
+}
+
+.convocations-heading h1 {
+  margin: 0 0 6px;
+
+  color: var(--color-navy);
+
+  font-size: 29px;
+  letter-spacing: -0.04em;
+}
+
+.convocations-heading p {
+  margin: 0;
+
+  color: var(--color-muted);
+
+  font-size: 13px;
+}
+
+.convocations-create-button {
+  min-height: 45px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+
+  padding: 0 20px;
+
+  border-radius: 9px;
+
+  background: linear-gradient(
+    90deg,
+    #0875f5,
+    #0866da
+  );
+
+  box-shadow: 0 9px 23px rgb(8 117 245 / 20%);
+
+  color: #ffffff;
+  cursor: pointer;
+
+  font-size: 11px;
+  font-weight: 750;
+}
+
+/* Notification */
+
+.convocations-toast {
+  position: fixed;
+  z-index: 2200;
+  top: 22px;
+  right: 22px;
+
+  max-width: 410px;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 14px 17px;
+
+  border: 1px solid #ccebd3;
+  border-radius: 12px;
+
+  background: #effbf2;
+  box-shadow: 0 18px 48px rgb(7 27 56 / 18%);
+
+  color: #237f39;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Statistiques */
+
+.convocations-stats {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+/* Filtres */
+
+.convocations-toolbar {
+  min-height: 58px;
+
+  display: grid;
+  grid-template-columns:
+    minmax(190px, 0.7fr)
+    minmax(190px, 0.7fr)
+    minmax(220px, 0.85fr)
+    minmax(250px, 1fr);
+  align-items: center;
+  gap: 12px;
+
+  margin-bottom: 15px;
+  padding: 8px 15px;
+
+  border: 1px solid #e4e9f0;
+  border-radius: 13px;
+
+  background: #ffffff;
+
+  box-shadow: 0 7px 22px rgb(7 27 56 / 5%);
+}
+
+.convocations-filter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.convocations-filter > span {
+  color: #41566f;
+
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.convocations-filter > div {
+  min-width: 0;
+  height: 38px;
+
+  display: flex;
+  flex: 1;
+  align-items: center;
+
+  padding: 0 10px;
+
+  border: 1px solid #dfe5ed;
+  border-radius: 8px;
+}
+
+.convocations-filter select {
+  width: 100%;
+
+  border: 0;
+  outline: 0;
+
+  appearance: none;
+
+  background: transparent;
+  color: #30445f;
+  cursor: pointer;
+
+  font-size: 9px;
+}
+
+.convocations-filter svg {
+  flex: 0 0 auto;
+
+  color: #718096;
+  pointer-events: none;
+}
+
+.convocations-search {
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  padding: 0 12px;
+
+  border: 1px solid #dfe5ed;
+  border-radius: 8px;
+
+  color: #718096;
+}
+
+.convocations-search input {
+  width: 100%;
+
+  border: 0;
+  outline: 0;
+
+  background: transparent;
+  color: var(--color-navy);
+
+  font-size: 9px;
+}
+
+/* Panneaux */
+
+.convocations-main-grid {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1.65fr)
+    minmax(320px, 0.85fr);
+  align-items: stretch;
+  gap: 15px;
+
+  margin-bottom: 15px;
+}
+
+.convocations-bottom-grid {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1.45fr)
+    minmax(330px, 0.85fr);
+  gap: 15px;
+}
+
+.convocations-panel {
+  min-width: 0;
+  overflow: hidden;
+
+  border: 1px solid #e4e9f0;
+  border-radius: 13px;
+
+  background: #ffffff;
+
+  box-shadow: 0 7px 22px rgb(7 27 56 / 5%);
+}
+
+.convocations-panel > header {
+  min-height: 50px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+
+  padding: 0 16px;
+}
+
+.convocations-panel > header h2 {
+  margin: 0;
+
+  color: var(--color-navy);
+
+  font-size: 13px;
+}
+
+.convocations-panel > header button {
+  display: grid;
+  place-items: center;
+
+  background: transparent;
+  color: #617289;
+  cursor: pointer;
+}
+
+.convocations-panel-link {
+  margin: 10px 16px 15px;
+
+  background: transparent;
+  color: var(--color-blue);
+  cursor: pointer;
+
+  font-size: 9px;
+  font-weight: 750;
+}
+
+/* Tableau principal */
+
+.convocations-table-wrapper {
+  overflow-x: auto;
+}
+
+.convocations-table,
+.convoked-players-table {
+  width: 100%;
+
+  border-collapse: collapse;
+}
+
+.convocations-table th,
+.convoked-players-table th {
+  padding: 10px 13px;
+
+  color: #718096;
+
+  font-size: 7px;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.convocations-table td,
+.convoked-players-table td {
+  padding: 9px 13px;
+
+  border-top: 1px solid #edf1f5;
+
+  color: #52657d;
+
+  font-size: 8px;
+  white-space: nowrap;
+}
+
+.convocations-table-row--selected {
+  background: #f4f8ff;
+}
+
+.convocation-event-name {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.convocation-event-name svg {
+  color: #52677f;
+}
+
+.convocation-event-name strong,
+.convoked-players-table td strong {
+  color: var(--color-navy);
+}
+
+.convocation-response-number--blue {
+  color: #0875f5;
+}
+
+.convocation-response-number--green {
+  color: #2a9a43;
+}
+
+.convocation-response-number--orange {
+  color: #ee7700;
+}
+
+.convocation-response-number--grey {
+  color: #718096;
+}
+
+.convocation-status {
+  display: inline-flex;
+
+  padding: 5px 9px;
+
+  border-radius: 7px;
+
+  font-size: 7px;
+  font-weight: 750;
+}
+
+.convocation-status--blue {
+  background: #e8f3ff;
+  color: #0875f5;
+}
+
+.convocation-status--green {
+  background: #eaf8ed;
+  color: #299443;
+}
+
+.convocation-status--orange {
+  background: #fff1e5;
+  color: #e27000;
+}
+
+.convocation-status--grey {
+  background: #eef1f5;
+  color: #617289;
+}
+
+.convocation-detail-button {
+  min-height: 29px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+
+  padding: 0 10px;
+
+  border: 1px solid #dce4ed;
+  border-radius: 7px;
+
+  background: #ffffff;
+  color: var(--color-blue);
+  cursor: pointer;
+
+  font-size: 8px;
+  font-weight: 750;
+}
+
+.convocation-detail-button span {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.convocations-empty {
+  min-height: 260px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  color: #8492a4;
+
+  text-align: center;
+}
+
+.convocations-empty h3 {
+  margin: 14px 0 5px;
+
+  color: var(--color-navy);
+
+  font-size: 16px;
+}
+
+.convocations-empty p {
+  margin: 0;
+
+  font-size: 10px;
+}
+
+.convocations-empty button {
+  margin-top: 15px;
+  padding: 9px 14px;
+
+  border-radius: 8px;
+
+  background: var(--color-blue);
+  color: #ffffff;
+  cursor: pointer;
+
+  font-size: 9px;
+}
+
+/* Détail */
+
+.convocation-detail-information {
+  display: grid;
+  grid-template-columns: 1fr 0.55fr;
+  gap: 11px 18px;
+
+  padding: 3px 16px 14px;
+}
+
+.convocation-detail-information > div {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  color: #3c526c;
+
+  font-size: 9px;
+}
+
+.convocation-detail-information svg {
+  flex: 0 0 auto;
+
+  color: var(--color-blue);
+}
+
+.convocation-detail-location,
+.convocation-detail-competition {
+  grid-column: 1 / -1;
+}
+
+.convocation-detail-responses {
+  display: grid;
+  grid-template-columns: 145px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+
+  padding: 12px 16px;
+}
+
+.convocation-response-donut {
+  position: relative;
+
+  width: 118px;
+  height: 118px;
+
+  display: grid;
+  place-items: center;
+
+  margin-inline: auto;
+
+  border-radius: 50%;
+}
+
+.convocation-response-donut::before {
+  width: 76px;
+  height: 76px;
+
+  content: "";
+
+  border-radius: 50%;
+
+  background: #ffffff;
+}
+
+.convocation-response-donut > div {
+  position: absolute;
+
+  display: grid;
+  place-items: center;
+}
+
+.convocation-response-donut strong {
+  color: var(--color-navy);
+
+  font-size: 18px;
+  line-height: 1;
+}
+
+.convocation-response-donut span {
+  color: #718096;
+
+  font-size: 8px;
+}
+
+.convocation-response-legend {
+  display: grid;
+  gap: 13px;
+}
+
+.convocation-response-legend article {
+  display: grid;
+  grid-template-columns:
+    8px
+    minmax(70px, 1fr)
+    17px
+    33px;
+  align-items: center;
+  gap: 8px;
+
+  color: #617289;
+
+  font-size: 8px;
+}
+
+.convocation-response-legend strong {
+  color: #30465f;
+}
+
+.convocation-dot {
+  width: 8px;
+  height: 8px;
+
+  border-radius: 50%;
+}
+
+.convocation-dot--green {
+  background: #31b756;
+}
+
+.convocation-dot--red {
+  background: #f04432;
+}
+
+.convocation-dot--orange {
+  background: #f5a609;
+}
+
+.convocation-dot--grey {
+  background: #dce2e9;
+}
+
+.convocation-detail-actions {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 10px;
+
+  padding: 0 16px 16px;
+}
+
+.convocation-detail-actions button {
+  min-height: 35px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  border: 1px solid #cfdced;
+  border-radius: 8px;
+
+  background: #ffffff;
+  color: var(--color-blue);
+  cursor: pointer;
+
+  font-size: 8px;
+  font-weight: 750;
+}
+
+/* Joueurs */
+
+.convoked-player-position,
+.convoked-player-status {
+  display: inline-flex;
+
+  padding: 5px 9px;
+
+  border-radius: 7px;
+
+  font-size: 7px;
+  font-weight: 750;
+}
+
+.convoked-player-position {
+  background: #f0eaff;
+  color: #7139db;
+}
+
+.convoked-player-status--present {
+  background: #eaf8ed;
+  color: #299443;
+}
+
+.convoked-player-status--absent {
+  background: #ffeded;
+  color: #e34545;
+}
+
+.convoked-player-status--pending {
+  background: #fff1e5;
+  color: #e27000;
+}
+
+.convoked-player-status--unanswered {
+  background: #eef1f5;
+  color: #617289;
+}
+
+/* Activité */
+
+.convocation-activity-list {
+  padding: 5px 16px;
+}
+
+.convocation-activity-list article {
+  min-height: 56px;
+
+  display: grid;
+  grid-template-columns:
+    34px
+    minmax(0, 1fr)
+    auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.convocation-activity-icon {
+  width: 32px;
+  height: 32px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 9px;
+}
+
+.convocation-activity-icon--confirmed {
+  background: #eaf8ed;
+  color: #31a64c;
+}
+
+.convocation-activity-icon--sent {
+  background: #e8f3ff;
+  color: #0875f5;
+}
+
+.convocation-activity-icon--reminder {
+  background: #fff1e5;
+  color: #f08a00;
+}
+
+.convocation-activity-list article > div:nth-child(2) {
+  min-width: 0;
+
+  display: grid;
+  gap: 4px;
+}
+
+.convocation-activity-list strong,
+.convocation-activity-list span {
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.convocation-activity-list strong {
+  color: var(--color-navy);
+
+  font-size: 9px;
+}
+
+.convocation-activity-list span {
+  color: #718096;
+
+  font-size: 8px;
+}
+
+.convocation-activity-list time {
+  color: #7c8a9b;
+
+  font-size: 7px;
+  white-space: nowrap;
+}
+
+/* Responsive */
+
+@media (max-width: 1350px) {
+  .convocations-stats {
+    grid-template-columns: repeat(
+      3,
+      minmax(0, 1fr)
+    );
+  }
+
+  .convocations-main-grid,
+  .convocations-bottom-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 1000px) {
+  .convocations-toolbar {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .convocations-search {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 750px) {
+  .convocations-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .convocations-create-button {
+    width: 100%;
+  }
+
+  .convocations-stats {
+    grid-template-columns: repeat(
+      2,
+      minmax(0, 1fr)
+    );
+  }
+
+  .convocations-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .convocations-search {
+    grid-column: auto;
+  }
+
+  .convocation-detail-responses {
+    grid-template-columns: 1fr;
+  }
+
+  .convocation-detail-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 550px) {
+  .convocations-heading__title {
+    align-items: flex-start;
+  }
+
+  .convocations-heading h1 {
+    font-size: 24px;
+  }
+
+  .convocations-filter {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .convocation-detail-information {
+    grid-template-columns: 1fr;
+  }
+
+  .convocation-detail-information > div {
+    grid-column: auto;
+  }
+
+  .convocation-activity-list time {
+    display: none;
+  }
+
+  .convocation-activity-list article {
+    grid-template-columns:
+      34px
+      minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 430px) {
+  .convocations-toast {
+    top: 12px;
+    right: 12px;
+    left: 12px;
+
+    max-width: none;
+  }
+}

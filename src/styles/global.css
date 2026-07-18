@@ -1,0 +1,188 @@
+@import "@fontsource-variable/manrope";
+
+:root {
+  font-family:
+    "Manrope Variable", Manrope, Inter, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  color: #081b38;
+  background-color: #ffffff;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  --font-ui: "Manrope Variable", Manrope, Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-display: "Manrope Variable", Manrope, Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  --color-navy: #071b38;
+  --color-blue: #0875f5;
+  --color-orange: #ff7a00;
+  --color-yellow: #e9c522;
+  --color-green: #43b95e;
+  --color-cyan: #24a9db;
+  --color-purple: #7139db;
+
+  --color-text: #081b38;
+  --color-muted: #53627a;
+  --color-background: #ffffff;
+  --color-surface: #f7f9fc;
+  --color-border: #e2e8f0;
+
+  --gradient-brand: linear-gradient(
+    90deg,
+    #ff7a00 0%,
+    #e9c522 27%,
+    #43b95e 52%,
+    #24a9db 76%,
+    #0875f5 100%
+  );
+
+  --shadow-soft: 0 12px 35px rgb(8 27 56 / 10%);
+  --radius-small: 12px;
+  --radius-medium: 20px;
+  --radius-large: 28px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  min-width: 320px;
+  background: var(--color-background);
+  color: var(--color-text);
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  border: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+.back-to-top-button {
+  position: fixed;
+  z-index: 1000;
+  right: 28px;
+  bottom: 28px;
+
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+
+  border: 0;
+  border-radius: 50%;
+  background: var(--gradient-brand);
+  box-shadow: 0 12px 28px rgb(7 27 56 / 22%);
+  color: #ffffff;
+  cursor: pointer;
+
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(18px) scale(0.9);
+
+  transition:
+    opacity 180ms ease,
+    visibility 180ms ease,
+    transform 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.back-to-top-button.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+}
+
+.back-to-top-button:hover {
+  box-shadow: 0 17px 36px rgb(7 27 56 / 30%);
+  transform: translateY(-3px) scale(1.04);
+}
+
+.back-to-top-button:focus-visible {
+  outline: 3px solid rgb(8 117 245 / 30%);
+  outline-offset: 4px;
+}
+
+@media (max-width: 650px) {
+  .back-to-top-button {
+    right: 18px;
+    bottom: 18px;
+    width: 46px;
+    height: 46px;
+  }
+}
+
+/* =========================================================
+   TYPOGRAPHIE GLOBALE PREMIUM
+   ========================================================= */
+
+body {
+  font-family: var(--font-ui);
+  font-weight: 470;
+  line-height: 1.5;
+  letter-spacing: -0.008em;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+strong,
+b {
+  font-family: var(--font-display);
+  letter-spacing: -0.025em;
+}
+
+button,
+input,
+textarea,
+select {
+  font-family: var(--font-ui);
+}
+
+small,
+time {
+  letter-spacing: -0.004em;
+}
+
+::selection {
+  background: rgb(8 117 245 / 18%);
+  color: #071b38;
+}
