@@ -8,15 +8,18 @@ import ScrollToTop from "./components/ScrollToTop";
 import AppLayout from "./components/app/AppLayout";
 import ToastViewport from "./components/app/shared/ToastViewport";
 import AppLoadingScreen from "./components/auth/AppLoadingScreen";
-import RequireActiveSubscription from "./components/auth/RequireActiveSubscription";
 import RequireAuth from "./components/auth/RequireAuth";
 import RequireClub from "./components/auth/RequireClub";
 import RequireCompleteProfile from "./components/auth/RequireCompleteProfile";
 import RequireLegalAcceptance from "./components/auth/RequireLegalAcceptance";
+import RequirePlatformAccess from "./components/auth/RequirePlatformAccess";
+import RequirePlatformAdmin from "./components/auth/RequirePlatformAdmin";
 import { useClub } from "./hooks/useClub";
 import { usePermissions } from "./hooks/usePermissions";
+import { usePlatformAdmin } from "./hooks/usePlatformAdmin";
 import AuthProvider from "./providers/AuthProvider";
 import ClubProvider from "./providers/ClubProvider";
+import PlatformAdminProvider from "./providers/PlatformAdminProvider";
 import ProfileProvider from "./providers/ProfileProvider";
 import ToastProvider from "./providers/ToastProvider";
 import { subscriptionAllowsAppAccess } from "./types/billing";
@@ -42,7 +45,9 @@ const CompleteProfilePage = lazy(
 const ForgotPasswordPage = lazy(
   () => import("./pages/auth/ForgotPasswordPage"),
 );
-const ResetPasswordPage = lazy(() => import("./pages/auth/ResetPasswordPage"));
+const ResetPasswordPage = lazy(
+  () => import("./pages/auth/ResetPasswordPage"),
+);
 const AcceptInvitationPage = lazy(
   () => import("./pages/auth/AcceptInvitationPage"),
 );
@@ -50,22 +55,36 @@ const AcceptLegalDocumentsPage = lazy(
   () => import("./pages/auth/AcceptLegalDocumentsPage"),
 );
 
-const AppPlaceholderPage = lazy(() => import("./pages/app/AppPlaceholderPage"));
+const AppPlaceholderPage = lazy(
+  () => import("./pages/app/AppPlaceholderPage"),
+);
 const DashboardPage = lazy(() => import("./pages/app/DashboardPage"));
-const SubscriptionPage = lazy(() => import("./pages/app/SubscriptionPage"));
+const SubscriptionPage = lazy(
+  () => import("./pages/app/SubscriptionPage"),
+);
 const MessagingPage = lazy(() => import("./pages/app/MessagingPage"));
 const TeamsPage = lazy(() => import("./pages/app/TeamsPage"));
 const TeamDetailsPage = lazy(() => import("./pages/app/TeamDetailsPage"));
 const CalendarPage = lazy(() => import("./pages/app/CalendarPage"));
 const MatchesPage = lazy(() => import("./pages/app/MatchesPage"));
-const MatchDetailsPage = lazy(() => import("./pages/app/MatchDetailsPage"));
-const ConvocationsPage = lazy(() => import("./pages/app/ConvocationsPage"));
-const AnnouncementsPage = lazy(() => import("./pages/app/AnnouncementsPage"));
+const MatchDetailsPage = lazy(
+  () => import("./pages/app/MatchDetailsPage"),
+);
+const ConvocationsPage = lazy(
+  () => import("./pages/app/ConvocationsPage"),
+);
+const AnnouncementsPage = lazy(
+  () => import("./pages/app/AnnouncementsPage"),
+);
 const TasksPage = lazy(() => import("./pages/app/TasksPage"));
 const MembersPage = lazy(() => import("./pages/app/MembersPage"));
 const DocumentsPage = lazy(() => import("./pages/app/DocumentsPage"));
 const SettingsPage = lazy(() => import("./pages/app/SettingsPage"));
 const LegalHelpPage = lazy(() => import("./pages/app/LegalHelpPage"));
+
+const AdminPage = lazy(
+  () => import("./pages/admin/AdminPage"),
+);
 
 interface RequireSectionAccessProps {
   section: "tasks" | "documents" | "messaging";
@@ -94,10 +113,30 @@ function RequireSectionAccess({
 }
 
 function AppIndexRedirect() {
-  const { activeSubscription, subscriptionLoading } = useClub();
+  const {
+    activeSubscription,
+    subscriptionLoading,
+  } = useClub();
 
-  if (subscriptionLoading) {
+  const {
+    isPlatformAdmin,
+    loading: platformAdminLoading,
+  } = usePlatformAdmin();
+
+  if (
+    subscriptionLoading ||
+    platformAdminLoading
+  ) {
     return <AppLoadingScreen />;
+  }
+
+  if (isPlatformAdmin) {
+    return (
+      <Navigate
+        to="/app/tableau-de-bord"
+        replace
+      />
+    );
   }
 
   return (
@@ -171,6 +210,17 @@ function AppRoutes() {
         />
 
         <Route
+          path="/admin"
+          element={
+            <RequireAuth>
+              <RequirePlatformAdmin>
+                <AdminPage />
+              </RequirePlatformAdmin>
+            </RequireAuth>
+          }
+        />
+
+        <Route
           path="/app"
           element={
             <RequireAuth>
@@ -187,7 +237,7 @@ function AppRoutes() {
           <Route index element={<AppIndexRedirect />} />
           <Route path="abonnement" element={<SubscriptionPage />} />
 
-          <Route element={<RequireActiveSubscription />}>
+          <Route element={<RequirePlatformAccess />}>
             <Route path="tableau-de-bord" element={<DashboardPage />} />
             <Route
               path="messagerie"
@@ -238,14 +288,16 @@ function App() {
   return (
     <ToastProvider>
       <AuthProvider>
-        <ProfileProvider>
-          <ClubProvider>
-            <ScrollToTop />
-            <AppRoutes />
-            <CompactLegalFooter />
-            <BackToTopButton />
-          </ClubProvider>
-        </ProfileProvider>
+        <PlatformAdminProvider>
+          <ProfileProvider>
+            <ClubProvider>
+              <ScrollToTop />
+              <AppRoutes />
+              <CompactLegalFooter />
+              <BackToTopButton />
+            </ClubProvider>
+          </ProfileProvider>
+        </PlatformAdminProvider>
       </AuthProvider>
       <ToastViewport />
     </ToastProvider>
