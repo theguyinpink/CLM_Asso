@@ -19,6 +19,7 @@ import { NavLink } from "react-router";
 import logo from "../../assets/logo.png";
 import { useClub } from "../../hooks/useClub";
 import { usePermissions } from "../../hooks/usePermissions";
+import { usePlatformAdmin } from "../../hooks/usePlatformAdmin";
 import { subscriptionAllowsAppAccess } from "../../types/billing";
 import type { ClubRole } from "../../types/club";
 
@@ -106,23 +107,56 @@ function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
     subscriptionLoading,
   } = useClub();
 
-  const { canAccessTasks, canAccessDocuments, canAccessMessaging } =
-    usePermissions();
+  const {
+    canAccessTasks,
+    canAccessDocuments,
+    canAccessMessaging,
+  } = usePermissions();
+
+  const { isPlatformAdmin } = usePlatformAdmin();
 
   const clubName = activeClub?.name?.trim() || "Mon club";
+
   const roleLabel = activeMembership
     ? clubRoleLabels[activeMembership.role]
     : "Membre";
+
   const hasAppAccess = subscriptionAllowsAppAccess(
     activeSubscription?.status,
     activeSubscription?.paymentGracePeriodEndsAt,
   );
 
   const visibleNavigationItems = navigationItems.filter((item) => {
-    if (!subscriptionLoading && !hasAppAccess) {
+    /**
+     * Super-admin Maison CLM :
+     * accès à absolument tous les onglets,
+     * même si le club n'a aucun abonnement actif.
+     */
+    if (isPlatformAdmin) {
+      return true;
+    }
+
+    /**
+     * Pendant le chargement de l'abonnement,
+     * on affiche uniquement l'accès à la page abonnement
+     * pour éviter un affichage temporaire d'onglets non autorisés.
+     */
+    if (subscriptionLoading) {
       return item.path === "/app/abonnement";
     }
 
+    /**
+     * Utilisateur classique sans abonnement valide :
+     * seule la page abonnement reste visible.
+     */
+    if (!hasAppAccess) {
+      return item.path === "/app/abonnement";
+    }
+
+    /**
+     * Restrictions normales selon les permissions
+     * du membre dans son club.
+     */
     if (item.path === "/app/taches") {
       return canAccessTasks;
     }
@@ -141,7 +175,11 @@ function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
   return (
     <aside className={`app-sidebar ${isOpen ? "app-sidebar--open" : ""}`}>
       <div className="app-sidebar__top">
-        <NavLink to="/" className="app-sidebar__logo" onClick={onClose}>
+        <NavLink
+          to="/"
+          className="app-sidebar__logo"
+          onClick={onClose}
+        >
           <img src={logo} alt="CLM Asso" />
         </NavLink>
 
@@ -180,7 +218,6 @@ function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
         })}
       </nav>
 
-      
       <NavLink
         to="/app/aide"
         onClick={onClose}
@@ -201,10 +238,13 @@ function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
 
         <div>
           <strong>{clubName}</strong>
+
           <span>
-            {activeSubscription?.planName
-              ? `${activeSubscription.planName} · ${roleLabel}`
-              : roleLabel}
+            {isPlatformAdmin
+              ? `Super administrateur · ${roleLabel}`
+              : activeSubscription?.planName
+                ? `${activeSubscription.planName} · ${roleLabel}`
+                : roleLabel}
           </span>
         </div>
       </div>
